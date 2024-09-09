@@ -1,5 +1,6 @@
 import React from "react";
 import { Divider } from "@tremor/react";
+import { Analytics } from "@vercel/analytics/react";
 
 import { EventsChart } from "./components/EventsChart";
 import { UniqueRunners } from "./components/UniqueRunners";
@@ -16,31 +17,34 @@ import { YouthInYear } from "./components/YouthInYear";
 
 function App() {
   return (
-    <div className="flex flex-wrap md:grid grid-cols-4 gap-x-4 gap-y-4 p-12 max-w-screen-xl mx-auto">
-      <StartsInYear />
-      <UniqueRunners />
-      <EventsInYear />
-      <YouthInYear />
-      <Divider className="col-span-4">
-        <h2 className="text-tremor-content-strong text-2xl">Starter pr år</h2>
-      </Divider>
-      <EventsChartCompare />
-      <AgeChart />
-      <EventsCategoryChart />
-      <EventsChart />
-      <Divider className="col-span-4">
-        <h2 className="text-tremor-content-strong text-2xl">
-          Topp 10 i {new Date().getFullYear()}
-        </h2>
-      </Divider>
-      <RunnersLeaderboard />
-      <DistrictsLeaderboard />
-      <ClubsLeaderboard />
-      <BirthYearLeaderboard />
-      {/* <Divider className="col-span-4">
+    <>
+      <Analytics />
+      <div className="flex flex-wrap md:grid grid-cols-4 gap-x-4 gap-y-4 p-12 max-w-screen-xl mx-auto">
+        <StartsInYear />
+        <UniqueRunners />
+        <EventsInYear />
+        <YouthInYear />
+        <Divider className="col-span-4">
+          <h2 className="text-tremor-content-strong text-2xl">Starter pr år</h2>
+        </Divider>
+        <EventsChartCompare />
+        <AgeChart />
+        <EventsCategoryChart />
+        <EventsChart />
+        <Divider className="col-span-4">
+          <h2 className="text-tremor-content-strong text-2xl">
+            Topp 10 i {new Date().getFullYear()}
+          </h2>
+        </Divider>
+        <RunnersLeaderboard />
+        <DistrictsLeaderboard />
+        <ClubsLeaderboard />
+        <BirthYearLeaderboard />
+        {/* <Divider className="col-span-4">
         <h2 className="text-tremor-content-strong text-2xl">Search</h2>
-      </Divider> */}
-    </div>
+        </Divider> */}
+      </div>
+    </>
   );
 }
 
