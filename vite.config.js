@@ -10,7 +10,7 @@ export default {
     open: true,
   },
   build: {
-    outDir: "../dist",
+    outDir: "../public",
     emptyOutDir: true,
     sourcemap: true,
   },

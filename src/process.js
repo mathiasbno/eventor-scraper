@@ -179,7 +179,11 @@ const insertData = async (formattedEvents, startDate, toDate) => {
   if (entriesError) console.error("Entries Error:", entriesError);
 };
 
-const fetchEventsAndInsert = async (_startDate, _endDate, granularity = 15) => {
+export const fetchEventsAndInsert = async (
+  _startDate,
+  _endDate,
+  granularity = 15
+) => {
   let startDate = _startDate;
   let endDate = _endDate;
   let toDate = new Date(startDate);
