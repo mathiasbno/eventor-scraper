@@ -36,10 +36,10 @@ function App() {
             Topp 10 i {new Date().getFullYear()}
           </h2>
         </Divider>
-        <RunnersLeaderboard />
-        <DistrictsLeaderboard />
         <ClubsLeaderboard />
-        <BirthYearLeaderboard />
+        <DistrictsLeaderboard />
+        {/* <BirthYearLeaderboard />
+        <RunnersLeaderboard /> */}
         {/* <Divider className="col-span-4">
         <h2 className="text-tremor-content-strong text-2xl">Search</h2>
         </Divider> */}
