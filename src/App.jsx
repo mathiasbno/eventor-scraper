@@ -14,6 +14,7 @@ import { EventsInYear } from "./components/EventsInYear";
 import { BirthYearLeaderboard } from "./components/BirthYearLeaderboard";
 import { AgeChart } from "./components/AgeChart";
 import { YouthInYear } from "./components/YouthInYear";
+import { AgeChartCohort } from "./components/AgeChartCohort";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <h2 className="text-tremor-content-strong text-2xl">Starter pr år</h2>
         </Divider>
         <EventsChartCompare />
+        <AgeChartCohort />
         <AgeChart />
         <EventsCategoryChart />
         <EventsChart />
