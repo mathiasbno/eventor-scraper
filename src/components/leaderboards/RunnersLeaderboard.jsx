@@ -7,10 +7,10 @@ import {
   Metric,
   Text,
 } from "@tremor/react";
-import { Spinner } from "./Spinner";
+import { Spinner } from "../Spinner";
 import { useEffect, useState } from "react";
 
-import { supabase } from "../supabaseClient";
+import { supabase } from "../../supabaseClient";
 
 export function RunnersLeaderboard() {
   const [data, setData] = useState([]);

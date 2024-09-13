@@ -1,22 +1,27 @@
 import { BadgeDelta, Card, Metric, NumberInput, Text } from "@tremor/react";
-import { Spinner } from "./Spinner";
+import { Spinner } from "../Spinner";
 import { useEffect, useState } from "react";
 
-import { supabase } from "../supabaseClient";
+import { supabase } from "../../supabaseClient";
 
-export function YouthInYear() {
+export function YouthInYear(props) {
+  const { filter } = props;
   const [data, setData] = useState([]);
   const [delta, setDelta] = useState(null);
-  const [minAge, setMinAge] = useState(13);
+  const [minAge, setMinAge] = useState(9);
   const [maxAge, setMaxAge] = useState(16);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    setLoading(true);
     const fetchData = async () => {
       const { data, error } = await supabase.rpc(
         "get_result_count_by_age_range",
         {
           min_age: minAge || null,
           max_age: maxAge || null,
+          organisation_ids: filter.organisations,
+          discipline_list: filter.disciplines,
         }
       );
 
@@ -26,28 +31,28 @@ export function YouthInYear() {
         const sortedData = data.sort((a, b) => b.event_year - a.event_year);
         setData(sortedData);
         setDelta(
-          ((sortedData[0].result_count - sortedData[1].result_count) /
-            sortedData[0].result_count) *
+          ((sortedData[0]?.result_count - sortedData[1]?.result_count) /
+            sortedData[0]?.result_count) *
             100
         );
+        setLoading(false);
       }
     };
 
     fetchData();
-  }, [minAge, maxAge]);
+  }, [minAge, maxAge, filter]);
 
   return (
     <Card className="col-span-1" decoration="top" decorationColor="indigo">
       <div className="flex justify-between items-center mb-2">
         <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-          Antall starter i alderen {minAge}-{maxAge} år i{" "}
-          {new Date().getFullYear()}
+          {`Antall starter i alderen <${maxAge} år i ${new Date().getFullYear()}`}
         </p>
       </div>
-      {data.length ? (
+      {!loading ? (
         <div className="flex gap-2 items-end">
           <p className="text-3xl text-tremor-content-strong dark:text-dark-tremor-content-strong font-semibold">
-            {data[0].result_count}
+            {data[0]?.result_count}
           </p>
           {delta ? (
             <BadgeDelta

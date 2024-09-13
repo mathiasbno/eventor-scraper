@@ -17,13 +17,9 @@ export const transformDataForChart = (groupedData, key, filter, accumulate) => {
 
   // Get all unique periods in 'MM' format
   const periods = new Set();
-  Object.values(groupedData).forEach((yearData) => {
-    yearData.forEach((item) => {
-      const date = new Date(item.period);
-      const period = `${date.getMonth() + 1}`;
-      periods.add(period);
-    });
-  });
+  for (let i = 1; i <= 12; i++) {
+    periods.add(i.toString());
+  }
 
   // Create a data point for each period
   periods.forEach((period) => {

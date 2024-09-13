@@ -9,19 +9,25 @@ import {
 } from "@tremor/react";
 import { useEffect, useState } from "react";
 
-import { supabase } from "../supabaseClient";
-import { Spinner } from "./Spinner";
-import { transformDataForChart } from "../helpers/chart";
+import { supabase } from "../../supabaseClient";
+import { Spinner } from "../Spinner";
+import { transformDataForChart } from "../../helpers/chart";
 
-export function EventsChartCompare() {
+export function EventsChartCompare(props) {
+  const { filter } = props;
+
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
   const [accumulate, setAccumulate] = useState(true);
-  const [filter, setFilter] = useState(["2024", "2019"]);
+  const [localFilter, setLocalFilter] = useState(["2024", "2019"]);
 
   useEffect(() => {
+    setLoading(true);
     const fetchData = async () => {
       const { data, error } = await supabase.rpc("get_events_by_granularity", {
         granularity: "month",
+        organisation_ids: filter.organisations,
+        discipline_list: filter.disciplines,
       });
 
       if (error) {
@@ -36,16 +42,17 @@ export function EventsChartCompare() {
           return acc;
         }, {});
         setData(groupedData);
+        setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [filter]);
 
   const chartData = transformDataForChart(
     data,
     "total_starts",
-    filter,
+    localFilter,
     accumulate
   );
 
@@ -77,7 +84,7 @@ export function EventsChartCompare() {
           <MultiSelect
             className="w-64"
             defaultValue={["2024", "2019"]}
-            onValueChange={(e) => setFilter(e)}
+            onValueChange={(e) => setLocalFilter(e)}
           >
             {Object.keys(data)
               .sort((a, b) => b - a)
@@ -90,12 +97,12 @@ export function EventsChartCompare() {
         </div>
       </div>
 
-      {chartData.length ? (
+      {!loading ? (
         <LineChart
           className="h-80"
           data={chartData}
           index="period"
-          categories={filter}
+          categories={localFilter}
           colors={[
             "fuchsia",
             "lime",

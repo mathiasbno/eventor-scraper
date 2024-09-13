@@ -1,20 +1,26 @@
 import { Card, LineChart, Select, SelectItem } from "@tremor/react";
 import { useEffect, useState } from "react";
 
-import { supabase } from "../supabaseClient";
-import { Spinner } from "./Spinner";
+import { supabase } from "../../supabaseClient";
+import { Spinner } from "../Spinner";
 
-export function EventsCategoryChart() {
+export function EventsCategoryChart(props) {
+  const { filter } = props;
+
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
   const [granularity, setGranularity] = useState("month");
   const [dataPoint, setDataPoint] = useState("number_of_events");
 
   useEffect(() => {
+    setLoading(true);
     const fetchData = async () => {
       const { data, error } = await supabase.rpc(
         "get_events_by_classification_granularity",
         {
           granularity,
+          organisation_ids: filter.organisations,
+          discipline_list: filter.disciplines,
         }
       );
 
@@ -22,11 +28,12 @@ export function EventsCategoryChart() {
         console.error("Error fetching data:", error);
       } else {
         setData(data);
+        setLoading(false);
       }
     };
 
     fetchData();
-  }, [granularity]);
+  }, [granularity, filter]);
 
   const chartData = data.map((d) => ({
     period: d.period,
@@ -68,7 +75,7 @@ export function EventsCategoryChart() {
         </div>
       </div>
 
-      {data.length ? (
+      {!loading ? (
         <LineChart
           className="h-80"
           data={chartData}

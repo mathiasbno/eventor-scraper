@@ -7,15 +7,13 @@ import {
 } from "@tremor/react";
 import { useEffect, useState } from "react";
 
-import { supabase } from "../supabaseClient";
-import { Spinner } from "./Spinner";
+import { supabase } from "../../supabaseClient";
+import { Spinner } from "../Spinner";
 
-export function AgeChartCohort() {
-  const [dataOrigin, setDataOrigin] = useState([]);
-  const [data, setData] = useState([]);
-  const [birthYearCategories, setBirthYearCategories] = useState([]);
-  const [accumulate, setAccumulate] = useState(true);
-  const [filter, setFilter] = useState([
+export function AgeChartCohort(props) {
+  const { filter } = props;
+
+  const defaultFilter = [
     "2000",
     "2001",
     "2002",
@@ -29,7 +27,14 @@ export function AgeChartCohort() {
     "2010",
     "2011",
     "2012",
-  ]);
+  ];
+
+  const [loading, setLoading] = useState(false);
+  const [dataOrigin, setDataOrigin] = useState([]);
+  const [data, setData] = useState([]);
+  const [birthYearCategories, setBirthYearCategories] = useState([]);
+  const [accumulate, setAccumulate] = useState(true);
+  const [localFilter, setLocalFilter] = useState(defaultFilter);
 
   const formatDataForChart = (data) => {
     // Extract all unique birth years to use as categories for the chart
@@ -74,9 +79,14 @@ export function AgeChartCohort() {
   };
 
   useEffect(() => {
+    setLoading(true);
     const fetchData = async () => {
       const { data, error } = await supabase.rpc(
-        "get_participation_by_birth_year_cohort"
+        "get_participation_by_birth_year_cohort",
+        {
+          organisation_ids: filter.organisations,
+          discipline_list: filter.disciplines,
+        }
       );
 
       if (error) {
@@ -93,19 +103,18 @@ export function AgeChartCohort() {
             )
             .sort((a, b) => a.event_year - b.event_year)
         );
+        setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [filter]);
 
   useEffect(() => {
     const { formattedData, categories } = formatDataForChart(dataOrigin);
     setData(formattedData);
     setBirthYearCategories(categories);
   }, [accumulate, dataOrigin]);
-
-  console.log(data, birthYearCategories);
 
   return (
     <Card
@@ -134,22 +143,8 @@ export function AgeChartCohort() {
 
           <MultiSelect
             className="w-64"
-            defaultValue={[
-              "2000",
-              "2001",
-              "2002",
-              "2003",
-              "2004",
-              "2005",
-              "2006",
-              "2007",
-              "2008",
-              "2009",
-              "2010",
-              "2011",
-              "2012",
-            ]}
-            onValueChange={(e) => setFilter(e)}
+            defaultValue={defaultFilter}
+            onValueChange={(e) => setLocalFilter(e)}
           >
             {birthYearCategories.map((item) => (
               <MultiSelectItem
@@ -163,13 +158,13 @@ export function AgeChartCohort() {
         </div>
       </div>
 
-      {data.length ? (
+      {!loading ? (
         <LineChart
           className="h-96"
           data={data}
           index="event_year" // X-axis represents the event year
           categories={birthYearCategories.filter((item) =>
-            filter.includes(item.toString())
+            localFilter.includes(item.toString())
           )} // Use dynamically generated categories
           colors={[
             "fuchsia",

@@ -8,10 +8,10 @@ import {
   NumberInput,
   Text,
 } from "@tremor/react";
-import { Spinner } from "./Spinner";
+import { Spinner } from "../Spinner";
 import { useEffect, useState } from "react";
 
-import { supabase } from "../supabaseClient";
+import { supabase } from "../../supabaseClient";
 
 export function BirthYearLeaderboard() {
   const [birthYear, setBirthYear] = useState(1990);

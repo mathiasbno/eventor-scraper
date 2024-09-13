@@ -1,12 +1,15 @@
 import { Card, LineChart, MultiSelect, MultiSelectItem } from "@tremor/react";
 import { useEffect, useState } from "react";
 
-import { supabase } from "../supabaseClient";
-import { Spinner } from "./Spinner";
+import { supabase } from "../../supabaseClient";
+import { Spinner } from "../Spinner";
 
-export function AgeChart() {
+export function AgeChart(props) {
+  const { filter } = props;
+
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
-  const [filter, setFilter] = useState(["2024", "2019"]);
+  const [localFilter, setLocalFilter] = useState(["2024", "2019"]);
   const [selectedCategories, setSelectedCategories] = useState([
     "results_under_9",
     "results_9_10",
@@ -42,9 +45,14 @@ export function AgeChart() {
   };
 
   useEffect(() => {
+    setLoading(true);
     const fetchData = async () => {
       const { data, error } = await supabase.rpc(
-        "get_starts_by_age_group_up_to_today_by_year"
+        "get_starts_by_age_group_up_to_today_by_year",
+        {
+          organisation_ids: filter.organisations,
+          discipline_list: filter.disciplines,
+        }
       );
 
       if (error) {
@@ -62,11 +70,12 @@ export function AgeChart() {
           return newItem;
         });
         setData(transformedData);
+        setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
+  }, [filter]);
 
   return (
     <Card
@@ -83,7 +92,7 @@ export function AgeChart() {
           <MultiSelect
             className="w-64"
             defaultValue={["2024", "2019"]}
-            onValueChange={(e) => setFilter(e)}
+            onValueChange={(e) => setLocalFilter(e)}
           >
             {data.map((item) => (
               <MultiSelectItem
@@ -109,11 +118,11 @@ export function AgeChart() {
         </div>
       </div>
 
-      {data.length ? (
+      {!loading ? (
         <LineChart
           className="h-80"
           data={data.filter((item) =>
-            filter.includes(item.event_year.toString())
+            localFilter.includes(item.event_year.toString())
           )}
           index="event_year"
           categories={selectedCategories.map((key) => categoryLabels[key])}
