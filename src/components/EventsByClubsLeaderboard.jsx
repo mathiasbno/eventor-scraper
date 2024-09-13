@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 
 import { supabase } from "../supabaseClient";
 
-export function ClubsLeaderboard() {
+export function EventsByClubsLeaderboard() {
   const [data, setData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       const { data, error } = await supabase
-        .rpc("get_starts_by_organisation_year", {
+        .rpc("get_events_by_organisation_year", {
           year_param: new Date().getFullYear(),
         })
         .limit(10);
@@ -28,7 +28,7 @@ export function ClubsLeaderboard() {
   return (
     <Card className="col-span-2" decoration="top" decorationColor="emerald">
       <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mb-5">
-        Klubber med flest starter i {new Date().getFullYear()}
+        Klubber med flest deltagere på sine løp i {new Date().getFullYear()}
       </h3>
       {data.length ? (
         <List>
@@ -39,7 +39,7 @@ export function ClubsLeaderboard() {
                   {item.organisationName}
                 </span>
               </p>
-              <span className="font-medium">{item.total_result_count}</span>
+              <span className="font-medium">{item.total_starts}</span>
             </ListItem>
           ))}
         </List>

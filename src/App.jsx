@@ -15,6 +15,7 @@ import { BirthYearLeaderboard } from "./components/BirthYearLeaderboard";
 import { AgeChart } from "./components/AgeChart";
 import { YouthInYear } from "./components/YouthInYear";
 import { AgeChartCohort } from "./components/AgeChartCohort";
+import { EventsByClubsLeaderboard } from "./components/EventsByClubsLeaderboard";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
         </Divider>
         <ClubsLeaderboard />
         <DistrictsLeaderboard />
+        <EventsByClubsLeaderboard />
         {/* <BirthYearLeaderboard />
         <RunnersLeaderboard /> */}
         {/* <Divider className="col-span-4">
