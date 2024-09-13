@@ -17,6 +17,7 @@ import { DistrictsLeaderboard } from "./components/leaderboards/DistrictsLeaderb
 import { EventsByClubsLeaderboard } from "./components/leaderboards/EventsByClubsLeaderboard";
 
 import { PageConfig } from "./components/PageConfig";
+import { Disclaimer } from "./components/Disclaimer";
 
 function App() {
   const [filter, setFilter] = useState(null);
@@ -55,6 +56,7 @@ function App() {
         </Divider> */}
           </>
         ) : null}
+        <Disclaimer />
       </div>
     </>
   );

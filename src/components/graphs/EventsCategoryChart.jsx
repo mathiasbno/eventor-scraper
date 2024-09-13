@@ -9,7 +9,7 @@ export function EventsCategoryChart(props) {
 
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
-  const [granularity, setGranularity] = useState("month");
+  const [granularity, setGranularity] = useState("year");
   const [dataPoint, setDataPoint] = useState("number_of_events");
 
   useEffect(() => {
@@ -64,14 +64,14 @@ export function EventsCategoryChart(props) {
             <SelectItem value="number_of_events">Antal løp</SelectItem>
             <SelectItem value="total_starts">Starter</SelectItem>
           </Select>
-          <Select
+          {/* <Select
             className="w-64"
             defaultValue="month"
             onValueChange={(value) => setGranularity(value)}
           >
             <SelectItem value="month">Måned</SelectItem>
             <SelectItem value="year">År</SelectItem>
-          </Select>
+          </Select> */}
         </div>
       </div>
 

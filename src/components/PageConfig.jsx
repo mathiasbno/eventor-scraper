@@ -85,13 +85,16 @@ export function PageConfig(props) {
         <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">
           Globale filter
         </h3>
-        <p className="text-tremor-content dark:text-dark-tremor-content">
-          Disse filterne vil påvirke alle grafer og tabeller på siden.
-          <br />
-          Filterne vil bli aktivert automatisk ved endring.
-          <br />
-          Når ingen filter er valgt hentes data for alle gren og kretser.
-        </p>
+        <div className="flex flex-col gap-2 max-w-xl">
+          <p className="text-tremor-content dark:text-dark-tremor-content">
+            Disse filterne vil påvirke <i>nesten</i> alle grafer og tabeller på
+            siden.
+            <br />
+            Filterne blir aktivert automatisk ved endring.
+            <br />
+            Når ingen filter er valgt hentes data for alle gren og kretser.
+          </p>
+        </div>
       </div>
       <Divider />
       <div className="flex items-center gap-4 mb-2">

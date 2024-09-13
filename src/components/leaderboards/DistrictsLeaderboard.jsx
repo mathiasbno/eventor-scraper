@@ -17,11 +17,12 @@ export function DistrictsLeaderboard() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data, error } = await supabase
-        .rpc("get_parent_org_stats_by_year", {
+      const { data, error } = await supabase.rpc(
+        "get_parent_org_stats_by_year",
+        {
           year_param: new Date().getFullYear(),
-        })
-        .limit(10);
+        }
+      );
 
       if (error) {
         console.error("Error fetching data:", error);

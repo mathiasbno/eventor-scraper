@@ -8,7 +8,7 @@ export function YouthInYear(props) {
   const { filter } = props;
   const [data, setData] = useState([]);
   const [delta, setDelta] = useState(null);
-  const [minAge, setMinAge] = useState(9);
+  const [minAge, setMinAge] = useState(1);
   const [maxAge, setMaxAge] = useState(16);
   const [loading, setLoading] = useState(false);
 
