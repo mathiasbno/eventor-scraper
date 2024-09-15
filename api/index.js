@@ -6,8 +6,8 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const eventorApi = new EventorApi({
-  eventorApiUrl: "https://eventor.orientering.no/api/",
-  apiKey: process.env.EVENTOR_NO_APIKEY,
+  eventorApiUrl: process.env.EVENTOR_PATH,
+  apiKey: process.env.EVENTOR_APIKEY,
 });
 
 const app = express();
@@ -129,7 +129,8 @@ app.get("/api/person/:personId", async (req, res) => {
 app.use(express.static("public"));
 
 const port = process.env.PORT || 4000;
-
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
+
+export default app;
