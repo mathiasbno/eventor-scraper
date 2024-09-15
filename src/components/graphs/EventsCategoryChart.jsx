@@ -49,7 +49,7 @@ export function EventsCategoryChart(props) {
       decoration="top"
       decorationColor="fuchsia"
     >
-      <div className="flex flex-col justify-between mb-2">
+      <div className="flex justify-between items-start md:items-center md:flex-row flex-col mb-2 gap-2">
         <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mb-2">
           {dataPoint === "number_of_events" ? "Løp" : "Starter"} pr kategori pr{" "}
           {granularity}

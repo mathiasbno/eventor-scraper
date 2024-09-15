@@ -83,12 +83,12 @@ export function AgeChart(props) {
       decoration="top"
       decorationColor="fuchsia"
     >
-      <div className="flex justify-between items-center mb-2">
+      <div className="flex justify-between items-start md:items-center md:flex-row flex-col mb-2 gap-2">
         <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">
           Antall starter pr aldersgruppe
         </h3>
 
-        <div className="flex justify-between items-center gap-3">
+        <div className="flex md:flex-row flex-col justify-between items-center gap-3">
           <MultiSelect
             className="w-64"
             defaultValue={["2024", "2019"]}

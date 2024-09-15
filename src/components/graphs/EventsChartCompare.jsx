@@ -62,24 +62,26 @@ export function EventsChartCompare(props) {
       decoration="top"
       decorationColor="fuchsia"
     >
-      <div className="flex justify-between items-center mb-2">
+      <div className="flex justify-between items-start md:items-center md:flex-row flex-col mb-2 gap-2">
         <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">
           Sammenlign starter pr år
         </h3>
 
-        <div className="flex justify-between items-center gap-3">
-          <label
-            htmlFor="switch"
-            className="text-tremor-default text-tremor-content dark:text-dark-tremor-content"
-          >
-            Sum
-          </label>
-          <Switch
-            id="switch"
-            name="switch"
-            checked={accumulate}
-            onChange={setAccumulate}
-          />
+        <div className="flex md:flex-row flex-col items-start justify-between md:items-center gap-3">
+          <div className="flex flex-row gap-3">
+            <label
+              htmlFor="switch"
+              className="text-tremor-default text-tremor-content dark:text-dark-tremor-content"
+            >
+              Summer over tid
+            </label>
+            <Switch
+              id="switch"
+              name="switch"
+              checked={accumulate}
+              onChange={setAccumulate}
+            />
+          </div>
 
           <MultiSelect
             className="w-64"

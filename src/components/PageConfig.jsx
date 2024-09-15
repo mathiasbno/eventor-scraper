@@ -81,74 +81,75 @@ export function PageConfig(props) {
 
   return (
     <Card className="col-span-4">
-      <div className="flex flex-col mb-2">
+      <div className="flex flex-col gap-2 mb-2">
         <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">
           Globale filter
         </h3>
-        <div className="flex flex-col gap-2 max-w-xl">
-          <p className="text-tremor-content dark:text-dark-tremor-content">
-            Disse filterne vil påvirke <i>nesten</i> alle grafer og tabeller på
-            siden.
-            <br />
-            Filterne blir aktivert automatisk ved endring.
-            <br />
-            Når ingen filter er valgt hentes data for alle gren og kretser.
-          </p>
-        </div>
-      </div>
-      <Divider />
-      <div className="flex items-center gap-4 mb-2">
-        <div className="flex gap-2 flex-col">
-          <label
-            htmlFor="dicipline"
-            className="text-tremor-default font-medium text-tremor-content dark:text-dark-tremor-content"
-          >
-            Gren
-          </label>
-          {disciplines.length ? (
-            <MultiSelect
-              id="dicipline"
-              className="w-64"
-              onValueChange={(e) => updateDisciplinesFilter(e)}
-            >
-              {disciplines.map((item) => (
-                <MultiSelectItem
-                  value={item.disciplineId}
-                  key={`discipline-${item.disciplineId}`}
+        <div className="flex md:flex-row flex-col gap-2 justify-between">
+          <div className="flex flex-col gap-2">
+            <p className="text-tremor-content dark:text-dark-tremor-content text-xs">
+              Disse filterne vil påvirke <i>nesten</i> alle grafer og tabeller
+              på siden.
+              <br />
+              Filterne blir aktivert automatisk ved endring.
+              <br />
+              Når ingen filter er valgt hentes data for alle gren og kretser.
+            </p>
+          </div>
+          <div className="flex item-start md:items-center md:flex-row flex-col gap-4 mb-2">
+            <div className="flex gap-1 flex-col">
+              <label
+                htmlFor="dicipline"
+                className="text-tremor-default font-medium text-tremor-content dark:text-dark-tremor-content"
+              >
+                Gren
+              </label>
+              {disciplines.length ? (
+                <MultiSelect
+                  id="dicipline"
+                  className="w-64"
+                  onValueChange={(e) => updateDisciplinesFilter(e)}
                 >
-                  {item.name}
-                </MultiSelectItem>
-              ))}
-            </MultiSelect>
-          ) : (
-            <Spinner />
-          )}
-        </div>
-        <div className="flex flex-col gap-2">
-          <label
-            htmlFor="organisations"
-            className="text-tremor-default font-medium text-tremor-content dark:text-dark-tremor-content"
-          >
-            Krets
-          </label>
-          {organisations.length ? (
-            <MultiSelect
-              id="organisations"
-              className="w-64"
-              onValueChange={(e) => updateOrganisationsFilter(e)}
-            >
-              {organisations.map((item) => (
-                <MultiSelectItem
-                  value={item.organisationId}
-                  key={`organisation-${item.organisationId}`}
+                  {disciplines.map((item) => (
+                    <MultiSelectItem
+                      value={item.disciplineId}
+                      key={`discipline-${item.disciplineId}`}
+                    >
+                      {item.name}
+                    </MultiSelectItem>
+                  ))}
+                </MultiSelect>
+              ) : (
+                <Spinner />
+              )}
+            </div>
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="organisations"
+                className="text-tremor-default font-medium text-tremor-content dark:text-dark-tremor-content"
+              >
+                Krets
+              </label>
+              {organisations.length ? (
+                <MultiSelect
+                  id="organisations"
+                  className="w-64"
+                  onValueChange={(e) => updateOrganisationsFilter(e)}
                 >
-                  {item.organisationName}
-                </MultiSelectItem>
-              ))}
-            </MultiSelect>
-          ) : (
-            <Spinner />
-          )}
+                  {organisations.map((item) => (
+                    <MultiSelectItem
+                      value={item.organisationId}
+                      key={`organisation-${item.organisationId}`}
+                    >
+                      {item.organisationName}
+                    </MultiSelectItem>
+                  ))}
+                </MultiSelect>
+              ) : (
+                <Spinner />
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </Card>

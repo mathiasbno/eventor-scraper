@@ -28,7 +28,7 @@ function App() {
   return (
     <>
       <Analytics />
-      <div className="flex flex-wrap md:grid grid-cols-4 gap-x-4 gap-y-4 p-12 max-w-screen-xl mx-auto">
+      <div className="flex flex-wrap md:grid grid-cols-4 gap-x-4 gap-y-4 p-5 max-w-screen-xl mx-auto">
         <PageConfig filter={filter} setFilter={setFilter} />
         {filter ? (
           <>

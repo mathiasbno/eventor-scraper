@@ -57,7 +57,7 @@ export function EventsChartMidWeekVsWeekend(props) {
       decoration="top"
       decorationColor="fuchsia"
     >
-      <div className="flex flex-col justify-between mb-2">
+      <div className="flex justify-between items-start md:items-center md:flex-row flex-col mb-2 gap-2">
         <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium ">
           Midt-uke vs helgestarter pr {granularityLookup[granularity]}
         </h3>
@@ -65,7 +65,7 @@ export function EventsChartMidWeekVsWeekend(props) {
           Midt-uke = mandag til torsdag, helg = fredag til søndag.
         </p>
 
-        <div className="flex justify-between items-center gap-3">
+        <div className="flex md:flex-row flex-col justify-between items-center gap-3">
           {/* <Select
             className="w-64"
             defaultValue="number_of_events"
