@@ -3,6 +3,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 
+import { fetchEventsAndInsert } from "../src/process.js";
+
 dotenv.config();
 
 export const eventorApi = new EventorApi({
@@ -17,6 +19,26 @@ app.use(cors());
 app.get("/api", (req, res) => {
   res.setHeader("Cache-Control", "s-max-age=1, stale-while-revalidate");
   res.status(200).send("API Ready to go");
+});
+
+app.get("/api/cron", async (req, res) => {
+  // if (
+  //   req.headers.get("Authorization") !== `Bearer ${process.env.CRON_SECRET}`
+  // ) {
+  //   return res.status(401).end("Unauthorized");
+  // }
+
+  try {
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() - 7);
+
+    await fetchEventsAndInsert(startDate, endDate, 7);
+
+    res.status(200).end("Events imported for the last 7 days");
+  } catch (error) {
+    res.status(500).end(error);
+  }
 });
 
 app.get("/api/events", async (req, res) => {
@@ -126,7 +148,7 @@ app.get("/api/person/:personId", async (req, res) => {
 });
 
 // Serve static files from the 'public' directory
-app.use(express.static("public"));
+app.use(express.static("dist"));
 
 const port = process.env.PORT || 4000;
 app.listen(port, () => {

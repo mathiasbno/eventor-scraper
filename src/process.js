@@ -9,6 +9,12 @@ import {
 
 dotenv.config();
 
+// Create a single supabase client for interacting with your database
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_PUBLIC_ANON_KEY
+);
+
 const nukeDate = async () => {
   const { data: eventsData } = await supabase
     .from("events")
@@ -46,14 +52,14 @@ const nukeDate = async () => {
 };
 
 const fetchPersonsForOrg = async (orgId) => {
-  return await fetch(`http://localhost:4000/api/persons/organisations/${orgId}`)
+  return await fetch(`${process.env.API_PATH}/persons/organisations/${orgId}`)
     .then((response) => response.json())
     .then((persons) => persons)
     .catch((err) => console.error(err));
 };
 
 const fetchOrgs = async () => {
-  return await fetch("http://localhost:4000/api/organisations")
+  return await fetch("${process.env.API_PATH}/organisations")
     .then((response) => response.json())
     .then((orgs) => orgs)
     .catch((err) => console.error(err));
@@ -79,7 +85,7 @@ const fetchEvents = async (options) => {
   const params = new URLSearchParams(options);
   try {
     const events = await fetchWithRetry(
-      `http://localhost:4000/api/events?${params}`
+      `${process.env.API_PATH}/events?${params}`
     );
 
     return Promise.all(
@@ -91,13 +97,13 @@ const fetchEvents = async (options) => {
           const [competiorCount, eventResults, eventEntries] =
             await Promise.all([
               fetchWithRetry(
-                `http://localhost:4000/api/competitorcount/${event.eventId}`
+                `${process.env.API_PATH}/competitorcount/${event.eventId}`
               ),
               fetchWithRetry(
-                `http://localhost:4000/api/results/${event.eventId}`
+                `${process.env.API_PATH}/results/${event.eventId}`
               ),
               fetchWithRetry(
-                `http://localhost:4000/api/entries/${event.eventId}`
+                `${process.env.API_PATH}/entries/${event.eventId}`
               ),
             ]);
           event.competiorCount = competiorCount;
@@ -122,12 +128,6 @@ const fetchAndInsertOrgs = async () => {
 
   console.log(data, error);
 };
-
-// Create a single supabase client for interacting with your database
-const supabase = createClient(
-  "https://zhmjbteiremuhyelwbar.supabase.co",
-  process.env.VITE_SUPABASE_PUBLIC_ANON_KEY
-);
 
 const insertData = async (formattedEvents, startDate, toDate) => {
   const { data: eventsData, error: eventsError } = await supabase
@@ -182,7 +182,8 @@ const insertData = async (formattedEvents, startDate, toDate) => {
 export const fetchEventsAndInsert = async (
   _startDate,
   _endDate,
-  granularity = 15
+  granularity = 15,
+  dryrun = false
 ) => {
   let startDate = _startDate;
   let endDate = _endDate;
@@ -205,13 +206,19 @@ export const fetchEventsAndInsert = async (
     const events = await fetchEvents(options);
     const formattedEvents = formatEvents(events);
 
-    await insertData(formattedEvents, options.fromDate, options.toDate);
+    if (!dryrun) {
+      await insertData(formattedEvents, options.fromDate, options.toDate);
+    }
 
     startDate.setDate(startDate.getDate() + granularity);
   }
 };
 
-const startDate = new Date("2016-07-02 00:00:00");
-const endDate = new Date("2017-01-01 00:00:00");
+// // Get the last 7 days of events
+// const startDate = new Date().setDate(endDate.getDate() - 7);
+// const endDate = new Date();
 
-// fetchEventsAndInsert(startDate, endDate, 10);
+// const granularity = 10; // some times the database times out with larger granularities when there are big races being processed from Eventor
+// const dryrun = false; // set to true if you just want the fetch data and not insert it into the database
+
+// fetchEventsAndInsert(startDate, endDate, granularity, dryrun);
