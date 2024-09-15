@@ -1,12 +1,4 @@
-import {
-  BadgeDelta,
-  Card,
-  Divider,
-  List,
-  ListItem,
-  Metric,
-  Text,
-} from "@tremor/react";
+import { Card, List, ListItem } from "@tremor/react";
 import { Spinner } from "../Spinner";
 import { useEffect, useState } from "react";
 

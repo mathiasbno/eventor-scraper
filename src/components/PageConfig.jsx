@@ -1,18 +1,10 @@
-import {
-  BadgeDelta,
-  Card,
-  Divider,
-  List,
-  ListItem,
-  Metric,
-  MultiSelect,
-  MultiSelectItem,
-  Text,
-} from "@tremor/react";
+import { Card, MultiSelect, MultiSelectItem } from "@tremor/react";
 import { useEffect, useState, useCallback } from "react";
 
 import { supabase } from "../supabaseClient";
 import { Spinner } from "./Spinner";
+
+const blackListedOrganisations = [3591];
 
 export function PageConfig(props) {
   const { setFilter } = props;
@@ -34,7 +26,11 @@ export function PageConfig(props) {
           disciplinesError
         );
       } else {
-        setOrganisations(organisationsData);
+        setOrganisations(
+          organisationsData.filter(
+            (item) => !blackListedOrganisations.includes(item.organisationId)
+          )
+        );
         setDisciplines(disciplinesData);
 
         setFilter({

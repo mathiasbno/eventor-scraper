@@ -1,4 +1,4 @@
-import { BadgeDelta, Card, Metric, Text } from "@tremor/react";
+import { BadgeDelta, Card } from "@tremor/react";
 import { Spinner } from "../Spinner";
 import { useEffect, useState } from "react";
 
