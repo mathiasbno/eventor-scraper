@@ -75,19 +75,21 @@ export function EventsCategoryChart(props) {
         </div>
       </div>
 
-      {!loading ? (
-        <LineChart
-          className="h-80"
-          data={chartData}
-          index="period"
-          categories={["Nasjonale løp", "Mesterskap", "Kretsløp", "Nærløp"]}
-          colors={["lime", "fuchsia", "teal", "yellow"]}
-          yAxisWidth={60}
-          onValueChange={(v) => console.log(v)}
-        />
-      ) : (
-        <Spinner />
-      )}
+      <div className="flex justify-center items-center h-80">
+        {!loading ? (
+          <LineChart
+            className="h-80"
+            data={chartData}
+            index="period"
+            categories={["Nasjonale løp", "Mesterskap", "Kretsløp", "Nærløp"]}
+            colors={["lime", "fuchsia", "teal", "yellow"]}
+            yAxisWidth={60}
+            onValueChange={(v) => console.log(v)}
+          />
+        ) : (
+          <Spinner />
+        )}
+      </div>
     </Card>
   );
 }

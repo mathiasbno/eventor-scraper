@@ -158,36 +158,38 @@ export function AgeChartCohort(props) {
         </div>
       </div>
 
-      {!loading ? (
-        <LineChart
-          className="h-96"
-          data={data}
-          index="event_year" // X-axis represents the event year
-          categories={birthYearCategories.filter((item) =>
-            localFilter.includes(item.toString())
-          )} // Use dynamically generated categories
-          colors={[
-            "fuchsia",
-            "lime",
-            "teal",
-            "yellow",
-            "indigo",
-            "rose",
-            "cyan",
-            "amber",
-            "emerald",
-            "orange",
-            "violet",
-            "sky",
-            "stone",
-            "pink",
-          ]}
-          yAxisWidth={60}
-          onValueChange={(v) => console.log(v)}
-        />
-      ) : (
-        <Spinner />
-      )}
+      <div className="flex justify-center items-center h-90">
+        {!loading ? (
+          <LineChart
+            className="h-96"
+            data={data}
+            index="event_year" // X-axis represents the event year
+            categories={birthYearCategories.filter((item) =>
+              localFilter.includes(item.toString())
+            )} // Use dynamically generated categories
+            colors={[
+              "fuchsia",
+              "lime",
+              "teal",
+              "yellow",
+              "indigo",
+              "rose",
+              "cyan",
+              "amber",
+              "emerald",
+              "orange",
+              "violet",
+              "sky",
+              "stone",
+              "pink",
+            ]}
+            yAxisWidth={60}
+            onValueChange={(v) => console.log(v)}
+          />
+        ) : (
+          <Spinner />
+        )}
+      </div>
     </Card>
   );
 }

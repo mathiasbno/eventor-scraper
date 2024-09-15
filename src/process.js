@@ -185,8 +185,8 @@ export const fetchEventsAndInsert = async (
   granularity = 15,
   dryrun = false
 ) => {
-  let startDate = _startDate;
-  let endDate = _endDate;
+  let startDate = new Date(_startDate);
+  let endDate = new Date(_endDate);
   let toDate = new Date(startDate);
 
   while (startDate < endDate) {
@@ -208,6 +208,34 @@ export const fetchEventsAndInsert = async (
 
     if (!dryrun) {
       await insertData(formattedEvents, options.fromDate, options.toDate);
+    } else {
+      console.log("=====================================");
+      console.log(`from ${startDate} to ${toDate}`);
+      console.log(
+        `Fetched ${
+          formattedEvents.map((item) => item.event).flat()?.length
+        } events`
+      );
+      console.log(
+        `Fetched ${
+          formattedEvents.map((item) => item.classes).flat()?.length
+        } classes`
+      );
+      console.log(
+        `Fetched ${
+          formattedEvents.map((item) => item.runners).flat()?.length
+        } runners`
+      );
+      console.log(
+        `Fetched ${
+          formattedEvents.map((item) => item.results).flat()?.length
+        } results`
+      );
+      console.log(
+        `Fetched ${
+          formattedEvents.map((item) => item.entries).flat()?.length
+        } entries`
+      );
     }
 
     startDate.setDate(startDate.getDate() + granularity);
@@ -215,10 +243,10 @@ export const fetchEventsAndInsert = async (
 };
 
 // // Get the last 7 days of events
-// const startDate = new Date().setDate(endDate.getDate() - 7);
+// const startDate = new Date().setDate(new Date().getDate() - 7);
 // const endDate = new Date();
 
 // const granularity = 10; // some times the database times out with larger granularities when there are big races being processed from Eventor
-// const dryrun = false; // set to true if you just want the fetch data and not insert it into the database
+// const dryrun = true; // set to true if you just want the fetch data and not insert it into the database
 
 // fetchEventsAndInsert(startDate, endDate, granularity, dryrun);

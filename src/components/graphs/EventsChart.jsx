@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 
 import { supabase } from "../../supabaseClient";
 import { Spinner } from "../Spinner";
+import { granularityLookup } from "../../helpers/chart";
 
 export function EventsChart(props) {
   const { filter } = props;
@@ -63,7 +64,7 @@ export function EventsChart(props) {
     >
       <div className="flex flex-col justify-between mb-2">
         <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mb-2">
-          Starter pr år
+          Starter pr {granularityLookup[granularity]}
         </h3>
 
         <div className="flex justify-between items-center gap-3">
@@ -92,20 +93,22 @@ export function EventsChart(props) {
         </div>
       </div>
 
-      {!loading ? (
-        <LineChart
-          className="h-80"
-          data={chartData}
-          index="period"
-          autoMinValue={true}
-          categories={localFilter}
-          colors={["indigo", "rose"]}
-          yAxisWidth={60}
-          onValueChange={(v) => console.log(v)}
-        />
-      ) : (
-        <Spinner />
-      )}
+      <div className="flex justify-center items-center h-80">
+        {!loading ? (
+          <LineChart
+            className="h-80"
+            data={chartData}
+            index="period"
+            autoMinValue={true}
+            categories={localFilter}
+            colors={["indigo", "rose"]}
+            yAxisWidth={60}
+            onValueChange={(v) => console.log(v)}
+          />
+        ) : (
+          <Spinner />
+        )}
+      </div>
     </Card>
   );
 }

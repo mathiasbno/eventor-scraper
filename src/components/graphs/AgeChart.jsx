@@ -118,36 +118,38 @@ export function AgeChart(props) {
         </div>
       </div>
 
-      {!loading ? (
-        <LineChart
-          className="h-80"
-          data={data.filter((item) =>
-            localFilter.includes(item.event_year.toString())
-          )}
-          index="event_year"
-          categories={selectedCategories.map((key) => categoryLabels[key])}
-          colors={[
-            "fuchsia",
-            "lime",
-            "teal",
-            "yellow",
-            "indigo",
-            "rose",
-            "cyan",
-            "amber",
-            "emerald",
-            "orange",
-            "violet",
-            "sky",
-            "stone",
-            "pink",
-          ]}
-          yAxisWidth={60}
-          onValueChange={(v) => console.log(v)}
-        />
-      ) : (
-        <Spinner />
-      )}
+      <div className="flex justify-center items-center h-90">
+        {!loading ? (
+          <LineChart
+            className="h-80"
+            data={data.filter((item) =>
+              localFilter.includes(item.event_year.toString())
+            )}
+            index="event_year"
+            categories={selectedCategories.map((key) => categoryLabels[key])}
+            colors={[
+              "fuchsia",
+              "lime",
+              "teal",
+              "yellow",
+              "indigo",
+              "rose",
+              "cyan",
+              "amber",
+              "emerald",
+              "orange",
+              "violet",
+              "sky",
+              "stone",
+              "pink",
+            ]}
+            yAxisWidth={60}
+            onValueChange={(v) => console.log(v)}
+          />
+        ) : (
+          <Spinner />
+        )}
+      </div>
     </Card>
   );
 }

@@ -18,6 +18,9 @@ import { EventsByClubsLeaderboard } from "./components/leaderboards/EventsByClub
 
 import { PageConfig } from "./components/PageConfig";
 import { Disclaimer } from "./components/Disclaimer";
+import { EventsChartMidWeekVsWeekend } from "./components/graphs/EventsChartMidWeekVsWeekend";
+import { Contribute } from "./components/Contribute";
+import { EventSearch } from "./components/leaderboards/EventSearch";
 
 function App() {
   const [filter, setFilter] = useState(null);
@@ -43,6 +46,7 @@ function App() {
             <AgeChart filter={filter} />
             <EventsCategoryChart filter={filter} />
             <EventsChart filter={filter} />
+            <EventsChartMidWeekVsWeekend filter={filter} />
             <Divider className="col-span-4">
               <h2 className="text-tremor-content-strong text-2xl">
                 Topp 10 i {new Date().getFullYear()}
@@ -51,12 +55,14 @@ function App() {
             <ClubsLeaderboard filter={filter} />
             <EventsByClubsLeaderboard filter={filter} />
             <DistrictsLeaderboard />
+            <EventSearch filter={filter} />
             {/* <Divider className="col-span-4">
         <h2 className="text-tremor-content-strong text-2xl">Search</h2>
         </Divider> */}
           </>
         ) : null}
         <Disclaimer />
+        <Contribute />
       </div>
     </>
   );
