@@ -64,7 +64,7 @@ export function EventsChart(props) {
     >
       <div className="flex justify-between items-start md:items-center md:flex-row flex-col mb-2 gap-2">
         <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mb-2">
-          Starter pr {granularityLookup[granularity]}
+          Starter pr {granularityLookup[granularity].toLowerCase()}
         </h3>
 
         <div className="flex md:flex-row flex-col justify-between items-center gap-3">

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 import { supabase } from "../../supabaseClient";
 import { Spinner } from "../Spinner";
+import { monthNames } from "../../helpers/chart";
 
 export function AgeChart(props) {
   const { filter } = props;
@@ -150,6 +151,11 @@ export function AgeChart(props) {
           <Spinner />
         )}
       </div>
+      <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">
+        Antall starter frem til{" "}
+        {monthNames[new Date().getMonth() - 1].toLowerCase()} sammenlignet med
+        samme måned historisk
+      </p>
     </Card>
   );
 }

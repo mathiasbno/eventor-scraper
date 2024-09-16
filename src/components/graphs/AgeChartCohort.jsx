@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 
 import { supabase } from "../../supabaseClient";
 import { Spinner } from "../Spinner";
+import { monthNames } from "../../helpers/chart";
 
 export function AgeChartCohort(props) {
   const { filter } = props;
@@ -33,7 +34,7 @@ export function AgeChartCohort(props) {
   const [dataOrigin, setDataOrigin] = useState([]);
   const [data, setData] = useState([]);
   const [birthYearCategories, setBirthYearCategories] = useState([]);
-  const [accumulate, setAccumulate] = useState(true);
+  const [accumulate, setAccumulate] = useState(false);
   const [localFilter, setLocalFilter] = useState(defaultFilter);
 
   const formatDataForChart = (data) => {
@@ -133,7 +134,7 @@ export function AgeChartCohort(props) {
               htmlFor="switch"
               className="text-tremor-default text-tremor-content dark:text-dark-tremor-content"
             >
-              Summer over tid
+              Akkumulert pr år
             </label>
             <Switch
               id="switch"
@@ -192,6 +193,11 @@ export function AgeChartCohort(props) {
           <Spinner />
         )}
       </div>
+      <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">
+        Antall starter frem til{" "}
+        {monthNames[new Date().getMonth() - 1].toLowerCase()} sammenlignet med
+        samme måned historisk
+      </p>
     </Card>
   );
 }

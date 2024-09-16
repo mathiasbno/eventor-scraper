@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 import { supabase } from "../../supabaseClient";
 import { Spinner } from "../Spinner";
+import { granularityLookup } from "../../helpers/chart";
 
 export function EventsCategoryChart(props) {
   const { filter } = props;
@@ -37,6 +38,7 @@ export function EventsCategoryChart(props) {
 
   const chartData = data.map((d) => ({
     period: d.period,
+    "Internasjonale løp": d[`${dataPoint}_international`],
     "Nasjonale løp": d[`${dataPoint}_national`],
     Mesterskap: d[`${dataPoint}_championchip`],
     Kretsløp: d[`${dataPoint}_regional`],
@@ -52,7 +54,7 @@ export function EventsCategoryChart(props) {
       <div className="flex justify-between items-start md:items-center md:flex-row flex-col mb-2 gap-2">
         <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mb-2">
           {dataPoint === "number_of_events" ? "Løp" : "Starter"} pr kategori pr{" "}
-          {granularity}
+          {granularityLookup[granularity].toLowerCase()}
         </h3>
 
         <div className="flex justify-between items-center gap-3">
@@ -81,8 +83,14 @@ export function EventsCategoryChart(props) {
             className="h-80"
             data={chartData}
             index="period"
-            categories={["Nasjonale løp", "Mesterskap", "Kretsløp", "Nærløp"]}
-            colors={["lime", "fuchsia", "teal", "yellow"]}
+            categories={[
+              "Kretsløp",
+              "Nærløp",
+              "Nasjonale løp",
+              "Mesterskap",
+              "Internasjonale løp",
+            ]}
+            colors={["lime", "fuchsia", "teal", "yellow", "red"]}
             yAxisWidth={60}
             onValueChange={(v) => console.log(v)}
           />

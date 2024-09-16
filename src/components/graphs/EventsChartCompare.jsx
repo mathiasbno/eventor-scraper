@@ -73,7 +73,7 @@ export function EventsChartCompare(props) {
               htmlFor="switch"
               className="text-tremor-default text-tremor-content dark:text-dark-tremor-content"
             >
-              Summer over tid
+              Akkumulert pr år
             </label>
             <Switch
               id="switch"

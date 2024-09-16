@@ -3,6 +3,7 @@ import { Spinner } from "../Spinner";
 import { useEffect, useState } from "react";
 
 import { supabase } from "../../supabaseClient";
+import { monthNames } from "../../helpers/chart";
 
 export function EventsInYear(props) {
   const { filter } = props;
@@ -43,7 +44,8 @@ export function EventsInYear(props) {
     <Card className="col-span-1" decoration="top" decorationColor="indigo">
       <div className="flex justify-between items-center mb-2">
         <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-          Antall løp i {new Date().getFullYear()}
+          Antall løp i {new Date().getFullYear()} til og med{" "}
+          {monthNames[new Date().getMonth() - 1].toLowerCase()}
         </p>
       </div>
       {!loading ? (
