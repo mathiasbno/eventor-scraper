@@ -102,7 +102,7 @@ You'll also need to add the following configs to the `.env` file.
 
 ```.env
 SUPABASE_URL<path-to-supabase-database>
-SUPABASE_PUBLIC_ANON_KEY=<you'r-supabase-anon-key
+SUPABASE_PUBLIC_ANON_KEY=<your-supabase-anon-key
 ```
 
 ## Contributing
