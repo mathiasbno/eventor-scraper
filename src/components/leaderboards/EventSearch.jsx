@@ -81,7 +81,7 @@ export function EventSearch(props) {
   return (
     <Card className="col-span-2" decoration="top" decorationColor="emerald">
       <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mb-5">
-        Sammenlign løp etter navn{eventName ? `: "${eventName}"` : ""}
+        Sammenlign løp på navn{eventName ? `: "${eventName}"` : ""}
       </h3>
       <div className="flex gap-5 mb-5">
         <TextInput

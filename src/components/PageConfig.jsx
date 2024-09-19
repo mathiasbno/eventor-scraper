@@ -1,5 +1,5 @@
-import { Card, MultiSelect, MultiSelectItem } from "@tremor/react";
-import { useEffect, useState, useCallback } from "react";
+import { Button, Card, MultiSelect, MultiSelectItem } from "@tremor/react";
+import { useEffect, useState } from "react";
 
 import { supabase } from "../supabaseClient";
 import { Spinner } from "./Spinner";
@@ -11,6 +11,8 @@ export function PageConfig(props) {
 
   const [organisations, setOrganisations] = useState([]);
   const [disciplines, setDisciplines] = useState([]);
+  const [selectedDisciplines, setSelectedDisciplines] = useState([]);
+  const [selectedOrganisations, setSelectedOrganisations] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,37 +45,14 @@ export function PageConfig(props) {
     fetchData();
   }, []);
 
-  // Debounce function
-  const debounce = (func, delay) => {
-    let timeoutId;
-    return (...args) => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        func(...args);
-      }, delay);
-    };
+  const handleFilterClick = () => {
+    setFilter({
+      disciplines: selectedDisciplines.length ? selectedDisciplines : null,
+      organisations: selectedOrganisations.length
+        ? selectedOrganisations
+        : null,
+    });
   };
-
-  // Debounced filter update functions
-  const updateDisciplinesFilter = useCallback(
-    debounce((values) => {
-      setFilter((prevFilter) => ({
-        ...prevFilter,
-        disciplines: values.length ? values : null,
-      }));
-    }, 1000),
-    []
-  );
-
-  const updateOrganisationsFilter = useCallback(
-    debounce((values) => {
-      setFilter((prevFilter) => ({
-        ...prevFilter,
-        organisations: values.length ? values : null,
-      }));
-    }, 1000),
-    []
-  );
 
   return (
     <Card className="col-span-4">
@@ -104,7 +83,8 @@ export function PageConfig(props) {
                 <MultiSelect
                   id="dicipline"
                   className="w-64"
-                  onValueChange={(e) => updateDisciplinesFilter(e)}
+                  onValueChange={(e) => setSelectedDisciplines(e)}
+                  value={selectedDisciplines}
                 >
                   {disciplines.map((item) => (
                     <MultiSelectItem
@@ -130,7 +110,8 @@ export function PageConfig(props) {
                 <MultiSelect
                   id="organisations"
                   className="w-64"
-                  onValueChange={(e) => updateOrganisationsFilter(e)}
+                  onValueChange={(e) => setSelectedOrganisations(e)}
+                  value={selectedOrganisations}
                 >
                   {organisations.map((item) => (
                     <MultiSelectItem
@@ -145,6 +126,13 @@ export function PageConfig(props) {
                 <Spinner />
               )}
             </div>
+            <Button
+              variant="primary"
+              onClick={handleFilterClick}
+              className="self-start md:self-end"
+            >
+              Filtrer
+            </Button>
           </div>
         </div>
       </div>

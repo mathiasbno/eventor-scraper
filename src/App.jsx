@@ -21,6 +21,8 @@ import { Disclaimer } from "./components/Disclaimer";
 import { EventsChartMidWeekVsWeekend } from "./components/graphs/EventsChartMidWeekVsWeekend";
 import { Contribute } from "./components/Contribute";
 import { EventSearch } from "./components/leaderboards/EventSearch";
+import { DistanceChart } from "./components/graphs/DistanceChart";
+import { LightConditionsChart } from "./components/graphs/LightConditionsChart";
 
 function App() {
   const [filter, setFilter] = useState(null);
@@ -47,6 +49,8 @@ function App() {
             <EventsCategoryChart filter={filter} />
             <EventsChart filter={filter} />
             <EventsChartMidWeekVsWeekend filter={filter} />
+            <DistanceChart filter={filter} />
+            <LightConditionsChart filter={filter} />
             <Divider className="col-span-4">
               <h2 className="text-tremor-content-strong text-2xl">
                 Topp 10 i {new Date().getFullYear()}
