@@ -58,7 +58,12 @@ export function LightConditionsChart(props) {
       if (error) {
         console.error("Error fetching data:", error);
       } else {
-        setData(data);
+        setData(
+          data.map((item) => ({
+            ...item,
+            lightconditions: item.lightconditions || "Day",
+          }))
+        );
         setLoading(false);
       }
     };
@@ -73,6 +78,10 @@ export function LightConditionsChart(props) {
   const uniqueLightConditions = Array.from(
     new Set(data.map((d) => d.lightconditions).flat())
   ).sort();
+
+  useEffect(() => {
+    setSelectedLightConditions(uniqueLightConditions);
+  }, [data]);
 
   const chartData = tiltData(data, uniquePeriods, uniqueLightConditions);
 
@@ -127,7 +136,7 @@ export function LightConditionsChart(props) {
               period: item.period,
               ...selectedLightConditions
                 .map((lightConditions) => ({
-                  [lightConditions]: item[lightConditions][dataPoint],
+                  [lightConditions]: item[lightConditions]?.[dataPoint],
                 }))
                 .reduce((acc, cur) => ({ ...acc, ...cur }), {}),
             }))}
