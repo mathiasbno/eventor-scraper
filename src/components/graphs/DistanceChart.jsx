@@ -49,6 +49,7 @@ export function DistanceChart(props) {
       const { data, error } = await supabase.rpc("get_events_by_distance", {
         granularity: "year",
         organisation_ids: filter.organisations,
+        discipline_list: filter.disciplines,
       });
 
       if (error) {
@@ -145,7 +146,7 @@ export function DistanceChart(props) {
         )}
       </div>
       <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">
-        Merk at data for innværende år kunn er frem til og med sist uke
+        Merk at data for innværende år kun er frem til og med sist uke
       </p>
     </Card>
   );

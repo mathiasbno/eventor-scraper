@@ -94,7 +94,9 @@ export function EventsChartMidWeekVsWeekend(props) {
         )}
       </div>
       <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">
-        Merk at data for innværende år kunn er frem til og med sist uke
+        Merk at data for innværende år kun er frem til og med sist uke
+        <br />
+        Data er ikke påvirket av det globale grenvalget
       </p>
     </Card>
   );
