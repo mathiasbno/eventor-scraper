@@ -59,9 +59,23 @@ const fetchPersonsForOrg = async (orgId) => {
 };
 
 const fetchOrgs = async () => {
-  return await fetch("${process.env.API_PATH}/organisations")
+  return await fetch(`${process.env.API_PATH}/organisations`)
     .then((response) => response.json())
     .then((orgs) => orgs)
+    .catch((err) => console.error(err));
+};
+
+const fetchEvent = async (id) => {
+  return await fetch(`${process.env.API_PATH}/event/${id}`)
+    .then((response) => response.json())
+    .then((event) => event)
+    .catch((err) => console.error(err));
+};
+
+const fetchEntryFees = async (id) => {
+  return await fetch(`${process.env.API_PATH}/entryfees/${id}`)
+    .then((response) => response.json())
+    .then((event) => console.log(event))
     .catch((err) => console.error(err));
 };
 
@@ -94,7 +108,7 @@ const fetchEvents = async (options) => {
           ["0", "1", "2", "3", "4"].includes(item.eventClassificationId)
         )
         .map(async (event) => {
-          const [competiorCount, eventResults, eventEntries] =
+          const [competiorCount, eventResults, eventEntries, eventEntryfees] =
             await Promise.all([
               fetchWithRetry(
                 `${process.env.API_PATH}/competitorcount/${event.eventId}`
@@ -105,10 +119,14 @@ const fetchEvents = async (options) => {
               fetchWithRetry(
                 `${process.env.API_PATH}/entries/${event.eventId}`
               ),
+              fetchWithRetry(
+                `${process.env.API_PATH}/entryfees/${event.eventId}`
+              ),
             ]);
           event.competiorCount = competiorCount;
           event.results = eventResults;
           event.entries = eventEntries;
+          event.entryfees = eventEntryfees;
           return event;
         })
     );
@@ -186,8 +204,11 @@ export const fetchEventsAndInsert = async (
   dryrun = false
 ) => {
   let startDate = new Date(_startDate);
+  startDate.setHours(0, 0, 0, 0);
+
   let endDate = new Date(_endDate);
   let toDate = new Date(startDate);
+  toDate.setHours(23, 59, 59, 999);
 
   while (startDate < endDate) {
     toDate = new Date(startDate.getTime());

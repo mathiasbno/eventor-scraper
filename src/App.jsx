@@ -23,6 +23,8 @@ import { Contribute } from "./components/Contribute";
 import { EventSearch } from "./components/leaderboards/EventSearch";
 import { DistanceChart } from "./components/graphs/DistanceChart";
 import { LightConditionsChart } from "./components/graphs/LightConditionsChart";
+import { EntryFeesChart } from "./components/graphs/EntryFeesChart";
+import { MaintenanceMode } from "./components/MaintenanceMode";
 
 function App() {
   const [filter, setFilter] = useState(null);
@@ -32,6 +34,7 @@ function App() {
       <Analytics />
       <div className="flex flex-wrap md:grid grid-cols-4 gap-x-4 gap-y-4 p-5 max-w-screen-xl mx-auto">
         <PageConfig filter={filter} setFilter={setFilter} />
+        <MaintenanceMode />
         {filter ? (
           <>
             <StartsInYear filter={filter} />
@@ -51,6 +54,7 @@ function App() {
             <EventsChartMidWeekVsWeekend filter={filter} />
             <DistanceChart filter={filter} />
             <LightConditionsChart filter={filter} />
+            <EntryFeesChart />
             <Divider className="col-span-4">
               <h2 className="text-tremor-content-strong text-2xl">
                 Topp 10 i {new Date().getFullYear()}

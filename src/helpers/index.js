@@ -130,10 +130,62 @@ export const formatClasses = (results, event) => {
   return data;
 };
 
-export const formatRaceData = (_results, _entries, event) => {
+export const formatEntryFees = (entryFees, event) => {
+  const { eventId } = event;
+
+  const estimateType = (name) => {
+    if (name?.toLowerCase().includes("voks")) {
+      return "adult";
+    }
+    if (name?.toLowerCase().includes("ungdom")) {
+      return "youth";
+    }
+    if (name?.toLowerCase().includes("barn")) {
+      return "kids";
+    }
+    return "notSpecified";
+  };
+
+  const estimateOrder = (name) => {
+    if (
+      name?.toLowerCase().includes("ordinær") ||
+      name?.toLowerCase().includes("påmelding")
+    ) {
+      return 0;
+    }
+    if (name?.toLowerCase().includes("etteranmelding")) {
+      return 1;
+    }
+    return;
+  };
+
+  const estimateClassType = (name) => {
+    if (name?.toLowerCase().includes("åpen")) {
+      return "open";
+    }
+    return "normal";
+  };
+
+  return entryFees.map((item) => {
+    return {
+      eventId: eventId,
+      entryFeeId: item.entryFeeId,
+      name: item.name,
+      amount: parseInt(item.amount._),
+      type: item.type === "elite" ? estimateType(item.name) : item.type,
+      valueOperator: item?.valueOperator,
+      order: estimateOrder(item.name),
+      classType: estimateClassType(item.name),
+    };
+  });
+};
+
+export const formatRaceData = (_results, _entries, _entryFees, event) => {
   const runners = formatRunners(_results);
 
   const classes = formatClasses(_results, event);
+
+  const entryFees = formatEntryFees(_entryFees, event);
 
   const validClassIds = new Set(classes.map((cls) => cls.classId));
   const entries = formatEntries(_entries, event).filter(
@@ -145,14 +197,15 @@ export const formatRaceData = (_results, _entries, event) => {
 
   const results = formatResults(_results, event);
 
-  return { classes, entries, results, runners };
+  return { classes, entries, results, runners, entryFees };
 };
 
 export const formatEvents = (events) => {
   const data = events.map((item) => {
-    const { classes, entries, results, runners } = formatRaceData(
+    const { classes, entries, results, runners, entryFees } = formatRaceData(
       item.results,
       item.entries,
+      item.entryfees,
       item
     );
 
@@ -172,19 +225,26 @@ export const formatEvents = (events) => {
       event: {
         eventId: item.eventId,
         name: item.name,
-        organiserId: organisationId,
+        organiserId: organisationIdRemap(organisationId),
         startDate: new Date(item.startDate.date).toISOString(),
         disciplineId: disciplineId,
         classificationId: item.eventClassificationId,
         distance: item.eventRace?.raceDistance,
         lightConditions: item.eventRace?.raceLightCondition,
-        numberOfEntries: parseInt(item.competiorCount[0]?.numberOfEntries || 0),
-        numberOfStarts: parseInt(item.competiorCount[0]?.numberOfStarts || 0),
+        numberOfEntries: parseInt(
+          item.competiorCount[0]?.numberOfEntries || entries.length
+        ),
+        numberOfStarts: parseInt(
+          item.competiorCount[0]?.numberOfStarts || results.length
+        ),
+        location: item.eventRace?.eventCenterPosition,
+        punchingUnitType: item.punchingUnitType?.value,
       },
       classes: classes,
       entries: entries,
       results: results,
       runners: runners,
+      entryFees: entryFees,
     };
   });
 
@@ -200,6 +260,17 @@ export const formatOrganisations = (organisations) => {
       parentOrganisationId: item.parentOrganisation?.organisationId,
     };
   });
+};
+
+const organisationIdRemap = (organisationId) => {
+  if (organisationId === "18") {
+    return "4"; // Agder O-krets -> Agder O-krets
+  }
+  if (organisationId === "7") {
+    return "12"; // Oppland -> Innlandet
+  }
+
+  return organisationId;
 };
 
 const disciplineLookup = (discipline) => {

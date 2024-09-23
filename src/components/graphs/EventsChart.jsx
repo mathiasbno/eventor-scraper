@@ -26,7 +26,7 @@ export function EventsChart(props) {
       const { data, error } = await supabase.rpc("get_events_by_granularity", {
         granularity,
         organisation_ids: filter.organisations,
-        // discipline_list: filter.disciplines, // diciplines are always returned
+        discipline_list: filter.disciplines, // diciplines are always returned
       });
 
       if (error) {

@@ -60,6 +60,16 @@ app.get("/api/event/:eventId", async (req, res) => {
   }
 });
 
+app.get("/api/entryfees/:eventId", async (req, res) => {
+  const { eventId } = req.params;
+  try {
+    const response = await eventorApi.entryfees(eventId);
+    res.json(response);
+  } catch (error) {
+    res.status;
+  }
+});
+
 app.get("/api/results/:eventId", async (req, res) => {
   const { eventId } = req.params;
   try {
