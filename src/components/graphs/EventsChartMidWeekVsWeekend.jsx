@@ -21,6 +21,7 @@ export function EventsChartMidWeekVsWeekend(props) {
         "get_mid_week_and_weekend_starts",
         {
           organisation_ids: filter.organisations,
+          discipline_list: filter.disciplines,
         }
       );
 

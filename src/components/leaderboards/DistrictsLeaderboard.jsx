@@ -5,9 +5,11 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../supabaseClient";
 
 export function DistrictsLeaderboard() {
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
 
   useEffect(() => {
+    setLoading(true);
     const fetchData = async () => {
       const { data, error } = await supabase.rpc(
         "get_parent_org_stats_by_year",
@@ -20,6 +22,7 @@ export function DistrictsLeaderboard() {
         console.error("Error fetching data:", error);
       } else {
         setData(data);
+        setLoading(false);
       }
     };
 
@@ -34,7 +37,7 @@ export function DistrictsLeaderboard() {
         </span>{" "}
         (starter i løp hvor arrangørklubben er registrert i kretsen)
       </h3>
-      {data.length ? (
+      {!loading ? (
         <List>
           {data.map((item, index) => (
             <ListItem key={`district-${index}`}>

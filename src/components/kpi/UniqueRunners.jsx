@@ -29,9 +29,9 @@ export function UniqueRunners(props) {
         const sortedData = data.sort((a, b) => b.event_year - a.event_year);
         setData(sortedData);
         setDelta(
-          ((sortedData[0].unique_runners_count -
-            sortedData[1].unique_runners_count) /
-            sortedData[0].unique_runners_count) *
+          (sortedData[0]?.unique_runners_count /
+            sortedData[1]?.unique_runners_count -
+            1) *
             100
         );
         setLoading(false);

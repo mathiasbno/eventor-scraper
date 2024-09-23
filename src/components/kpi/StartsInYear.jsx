@@ -29,9 +29,7 @@ export function StartsInYear(props) {
         const sortedData = data.sort((a, b) => b.event_year - a.event_year);
         setData(sortedData);
         setDelta(
-          ((sortedData[0]?.total_starts - sortedData[1]?.total_starts) /
-            sortedData[0]?.total_starts) *
-            100
+          (sortedData[0]?.total_starts / sortedData[1]?.total_starts - 1) * 100
         );
         setLoading(false);
       }

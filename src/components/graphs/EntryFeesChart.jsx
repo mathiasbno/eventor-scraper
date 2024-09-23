@@ -18,8 +18,8 @@ export function EntryFeesChart(props) {
     const fetchData = async () => {
       const { data, error } = await supabase.rpc("get_entry_fees_by_period", {
         // granularity: "year",
-        // organisation_ids: filter.organisations,
-        // discipline_list: filter.disciplines,
+        organisation_ids: filter.organisations,
+        discipline_list: filter.disciplines,
       });
 
       if (error) {

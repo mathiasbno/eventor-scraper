@@ -32,9 +32,7 @@ export function YouthInYear(props) {
         const sortedData = data.sort((a, b) => b.event_year - a.event_year);
         setData(sortedData);
         setDelta(
-          ((sortedData[0]?.result_count - sortedData[1]?.result_count) /
-            sortedData[0]?.result_count) *
-            100
+          (sortedData[0]?.result_count / sortedData[1]?.result_count - 1) * 100
         );
         setLoading(false);
       }

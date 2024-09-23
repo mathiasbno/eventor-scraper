@@ -17,7 +17,7 @@ export function EventsByClubsLeaderboard(props) {
         .rpc("get_events_by_organisation_year", {
           year_param: new Date().getFullYear(),
           organisation_ids: filter.organisations,
-          discipline_list: filter.discipl,
+          discipline_list: filter.disciplines,
         })
         .limit(10);
 

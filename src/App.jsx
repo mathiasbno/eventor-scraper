@@ -54,7 +54,7 @@ function App() {
             <EventsChartMidWeekVsWeekend filter={filter} />
             <DistanceChart filter={filter} />
             <LightConditionsChart filter={filter} />
-            <EntryFeesChart />
+            <EntryFeesChart filter={filter} />
             <Divider className="col-span-4">
               <h2 className="text-tremor-content-strong text-2xl">
                 Topp 10 i {new Date().getFullYear()}
