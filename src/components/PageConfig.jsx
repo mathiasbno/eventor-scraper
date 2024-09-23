@@ -36,8 +36,8 @@ export function PageConfig(props) {
         setDisciplines(disciplinesData);
 
         setFilter({
-          disciplines: disciplinesData.map((item) => item.disciplineId),
-          organisations: organisationsData.map((item) => item.organisationId),
+          disciplines: null,
+          organisations: null,
         });
       }
     };
