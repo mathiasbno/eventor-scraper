@@ -16,15 +16,12 @@ export function YouthInYear(props) {
   useEffect(() => {
     setLoading(true);
     const fetchData = async () => {
-      const { data, error } = await supabase.rpc(
-        "get_result_count_by_age_range",
-        {
-          min_age: minAge || null,
-          max_age: maxAge || null,
-          organisation_ids: filter.organisations,
-          discipline_list: filter.disciplines,
-        }
-      );
+      const { data, error } = await supabase.rpc("get_runners_by_age_range", {
+        min_age: minAge || null,
+        max_age: maxAge || null,
+        organisation_ids: filter.organisations,
+        discipline_list: filter.disciplines,
+      });
 
       if (error) {
         console.error("Error fetching data:", error);
@@ -32,7 +29,7 @@ export function YouthInYear(props) {
         const sortedData = data.sort((a, b) => b.event_year - a.event_year);
         setData(sortedData);
         setDelta(
-          (sortedData[0]?.result_count / sortedData[1]?.result_count - 1) * 100
+          (sortedData[0]?.total_starts / sortedData[1]?.total_starts - 1) * 100
         );
         setLoading(false);
       }
@@ -42,18 +39,20 @@ export function YouthInYear(props) {
   }, [minAge, maxAge, filter]);
 
   return (
-    <Card className="col-span-1" decoration="top" decorationColor="indigo">
+    <Card
+      className="col-span-1 flex flex-col justify-between"
+      decoration="top"
+      decorationColor="indigo"
+    >
       <div className="flex justify-between items-center mb-2">
         <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-          {`Antall starter i alderen <${maxAge} år i ${new Date().getFullYear()} til og med ${monthNames[
-            new Date().getMonth() - 1
-          ].toLowerCase()}`}
+          {`Antall starter i alderen <${maxAge} så langt i ${new Date().getFullYear()}`}
         </p>
       </div>
       {!loading ? (
         <div className="flex gap-2 items-end">
           <p className="text-3xl text-tremor-content-strong dark:text-dark-tremor-content-strong font-semibold">
-            {data[0]?.result_count}
+            {data[0]?.total_starts}
           </p>
           {delta ? (
             <BadgeDelta

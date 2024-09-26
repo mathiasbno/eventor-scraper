@@ -16,7 +16,7 @@ export function EntryFeesChart(props) {
   useEffect(() => {
     setLoading(true);
     const fetchData = async () => {
-      const { data, error } = await supabase.rpc("get_entry_fees_by_period", {
+      const { data, error } = await supabase.rpc("get_entry_fees", {
         // granularity: "year",
         organisation_ids: filter.organisations,
         discipline_list: filter.disciplines,
@@ -92,8 +92,7 @@ export function EntryFeesChart(props) {
             className="h-80"
             data={data.filter(
               (item) =>
-                item.period === parseInt(period) &&
-                item[`${classtype}_${type}_count`] > 0
+                item.period === period && item[`${classtype}_${type}_count`] > 0
             )}
             index="amount"
             showLegend={false}

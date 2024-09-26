@@ -12,49 +12,50 @@ export function AgeChart(props) {
   const [data, setData] = useState([]);
   const [localFilter, setLocalFilter] = useState(["2024", "2019"]);
   const [selectedCategories, setSelectedCategories] = useState([
-    "results_under_9",
-    "results_9_10",
-    "results_11_12",
-    "results_13_14",
-    "results_15_16",
-    "results_17_18",
-    "results_19_20",
-    "results_21_34",
+    "total_starts_under_9",
+    "total_starts_9_10",
+    "total_starts_11_12",
+    "total_starts_13_14",
+    "total_starts_15_16",
+    "total_starts_17_18",
+    "total_starts_19_20",
+    "total_starts_21_34",
   ]);
 
   const categoryLabels = {
-    results_under_9: "Under 9",
-    results_9_10: "9-10",
-    results_11_12: "11-12",
-    results_13_14: "13-14",
-    results_15_16: "15-16",
-    results_17_18: "17-18",
-    results_19_20: "19-20",
-    results_21_34: "21-34",
-    results_35_39: "35-39",
-    results_40_44: "40-44",
-    results_45_49: "45-49",
-    results_50_54: "50-54",
-    results_55_59: "55-59",
-    results_60_64: "60-64",
-    results_65_69: "65-69",
-    results_70_74: "70-74",
-    results_75_79: "75-79",
-    results_80_84: "80-84",
-    results_85_89: "85-89",
-    results_90_plus: "90+",
+    total_starts_under_9: "Under 9",
+    total_starts_9_10: "9-10",
+    total_starts_11_12: "11-12",
+    total_starts_13_14: "13-14",
+    total_starts_15_16: "15-16",
+    total_starts_17_18: "17-18",
+    total_starts_19_20: "19-20",
+    total_starts_21_34: "21-34",
+    total_starts_35_39: "35-39",
+    total_starts_40_44: "40-44",
+    total_starts_45_49: "45-49",
+    total_starts_50_54: "50-54",
+    total_starts_55_59: "55-59",
+    total_starts_60_64: "60-64",
+    total_starts_65_69: "65-69",
+    total_starts_70_74: "70-74",
+    total_starts_75_79: "75-79",
+    total_starts_80_84: "80-84",
+    total_starts_85_89: "85-89",
+    total_starts_90_plus: "90+",
+    total_starts_ungdom: "Ungdom",
+    total_starts_junior: "Junior",
+    total_starts_senior: "Senior",
+    total_starts_veteran: "Veteran",
   };
 
   useEffect(() => {
     setLoading(true);
     const fetchData = async () => {
-      const { data, error } = await supabase.rpc(
-        "get_starts_by_age_group_up_to_today_by_year",
-        {
-          organisation_ids: filter.organisations,
-          discipline_list: filter.disciplines,
-        }
-      );
+      const { data, error } = await supabase.rpc("get_starts_by_age_group", {
+        organisation_ids: filter.organisations,
+        discipline_list: filter.disciplines,
+      });
 
       if (error) {
         console.error("Error fetching data:", error);
@@ -97,10 +98,10 @@ export function AgeChart(props) {
           >
             {data.map((item) => (
               <MultiSelectItem
-                value={item.event_year.toString()}
-                key={`event_year-${item.event_year}`}
+                value={item.period.toString()}
+                key={`period-${item.period}`}
               >
-                {item.event_year.toString()}
+                {item.period.toString()}
               </MultiSelectItem>
             ))}
           </MultiSelect>
@@ -124,9 +125,9 @@ export function AgeChart(props) {
           <LineChart
             className="h-80"
             data={data.filter((item) =>
-              localFilter.includes(item.event_year.toString())
+              localFilter.includes(item.period.toString())
             )}
-            index="event_year"
+            index="period"
             categories={selectedCategories.map((key) => categoryLabels[key])}
             colors={[
               "fuchsia",

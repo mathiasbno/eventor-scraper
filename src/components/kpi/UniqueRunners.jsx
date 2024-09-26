@@ -15,13 +15,10 @@ export function UniqueRunners(props) {
   useEffect(() => {
     setLoading(true);
     const fetchData = async () => {
-      const { data, error } = await supabase.rpc(
-        "get_unique_runners_up_to_today_year",
-        {
-          organisation_ids: filter.organisations,
-          discipline_list: filter.disciplines,
-        }
-      );
+      const { data, error } = await supabase.rpc("get_unique_runners_by_year", {
+        organisation_ids: filter.organisations,
+        discipline_list: filter.disciplines,
+      });
 
       if (error) {
         console.error("Error fetching data:", error);
@@ -29,8 +26,8 @@ export function UniqueRunners(props) {
         const sortedData = data.sort((a, b) => b.event_year - a.event_year);
         setData(sortedData);
         setDelta(
-          (sortedData[0]?.unique_runners_count /
-            sortedData[1]?.unique_runners_count -
+          (sortedData[0]?.total_unique_runners /
+            sortedData[1]?.total_unique_runners -
             1) *
             100
         );
@@ -42,17 +39,20 @@ export function UniqueRunners(props) {
   }, [filter]);
 
   return (
-    <Card className="col-span-1" decoration="top" decorationColor="indigo">
+    <Card
+      className="col-span-1 flex flex-col justify-between"
+      decoration="top"
+      decorationColor="indigo"
+    >
       <div className="flex justify-between items-center mb-2">
         <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-          Antall unike løpere i {new Date().getFullYear()} til og med{" "}
-          {monthNames[new Date().getMonth() - 1].toLowerCase()}
+          Antall unike løpere så langt i {new Date().getFullYear()}
         </p>
       </div>
       {!loading ? (
         <div className="flex gap-2 items-end">
           <p className="text-3xl text-tremor-content-strong dark:text-dark-tremor-content-strong font-semibold">
-            {data[0]?.unique_runners_count}
+            {data[0]?.total_unique_runners}
           </p>
           {delta ? (
             <BadgeDelta

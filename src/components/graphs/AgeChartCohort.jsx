@@ -114,7 +114,7 @@ export function AgeChartCohort(props) {
   useEffect(() => {
     const { formattedData, categories } = formatDataForChart(dataOrigin);
     setData(formattedData);
-    setBirthYearCategories(categories);
+    setBirthYearCategories(categories.sort((a, b) => a - b));
   }, [accumulate, dataOrigin]);
 
   return (

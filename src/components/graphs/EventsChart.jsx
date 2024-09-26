@@ -23,10 +23,10 @@ export function EventsChart(props) {
   useEffect(() => {
     setLoading(true);
     const fetchData = async () => {
-      const { data, error } = await supabase.rpc("get_events_by_granularity", {
+      const { data, error } = await supabase.rpc("get_events_by_discipline", {
         granularity,
         organisation_ids: filter.organisations,
-        discipline_list: filter.disciplines, // diciplines are always returned
+        discipline_list: filter.disciplines,
       });
 
       if (error) {
@@ -42,10 +42,10 @@ export function EventsChart(props) {
 
   const lookup = {
     total_starts: "Alle starter",
-    starts_orienteering: "Orientering",
-    starts_skiorienteering: "Skiorientering",
-    starts_preo: "Pre-o",
-    starts_mtbo: "MTBO",
+    total_starts_o: "Orientering",
+    total_starts_s: "Skiorientering",
+    total_starts_p: "Pre-o",
+    total_starts_m: "MTBO",
   };
 
   const chartData = data.map((d) => ({
@@ -62,8 +62,8 @@ export function EventsChart(props) {
       decoration="top"
       decorationColor="fuchsia"
     >
-      <div className="flex justify-between items-start md:items-center md:flex-row flex-col mb-2 gap-2">
-        <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mb-2">
+      <div className="flex justify-between items-start flex-col  mb-2 gap-2">
+        <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium flex justify-between items-start flex-col  mb-2 gap-2">
           Starter pr {granularityLookup[granularity].toLowerCase()}
         </h3>
 
@@ -110,7 +110,7 @@ export function EventsChart(props) {
         )}
       </div>
       <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">
-        Merk at data for innværende år kun er frem til og med sist uke
+        Data som målt på samme tidspunkt foregående år
       </p>
     </Card>
   );

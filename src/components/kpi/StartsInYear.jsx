@@ -15,13 +15,10 @@ export function StartsInYear(props) {
   useEffect(() => {
     setLoading(true);
     const fetchData = async () => {
-      const { data, error } = await supabase.rpc(
-        "get_total_starts_up_to_today_year",
-        {
-          organisation_ids: filter.organisations,
-          discipline_list: filter.disciplines,
-        }
-      );
+      const { data, error } = await supabase.rpc("get_starts_by_year", {
+        organisation_ids: filter.organisations,
+        discipline_list: filter.disciplines,
+      });
 
       if (error) {
         console.error("Error fetching data:", error);
@@ -39,11 +36,14 @@ export function StartsInYear(props) {
   }, [filter]);
 
   return (
-    <Card className="col-span-1" decoration="top" decorationColor="indigo">
+    <Card
+      className="col-span-1 flex flex-col justify-between"
+      decoration="top"
+      decorationColor="indigo"
+    >
       <div className="flex justify-between items-center mb-2">
         <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-          Antall starter i {new Date().getFullYear()} til og med{" "}
-          {monthNames[new Date().getMonth() - 1].toLowerCase()}
+          Antall starter så langt i {new Date().getFullYear()}
         </p>
       </div>
       {!loading ? (

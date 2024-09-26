@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { Spinner } from "./Spinner";
 
-const blackListedOrganisations = [3591];
+const blackListedOrganisations = ["3591"];
 
 export function PageConfig(props) {
   const { setFilter } = props;

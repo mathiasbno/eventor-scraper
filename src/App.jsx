@@ -47,13 +47,13 @@ function App() {
               </h2>
             </Divider>
             <EventsChartCompare filter={filter} />
-            <AgeChartCohort filter={filter} />
-            <AgeChart filter={filter} />
             <EventsCategoryChart filter={filter} />
             <EventsChart filter={filter} />
             <EventsChartMidWeekVsWeekend filter={filter} />
             <DistanceChart filter={filter} />
             <LightConditionsChart filter={filter} />
+            <AgeChartCohort filter={filter} />
+            <AgeChart filter={filter} />
             <EntryFeesChart filter={filter} />
             <Divider className="col-span-4">
               <h2 className="text-tremor-content-strong text-2xl">
@@ -62,7 +62,7 @@ function App() {
             </Divider>
             <ClubsLeaderboard filter={filter} />
             <EventsByClubsLeaderboard filter={filter} />
-            <DistrictsLeaderboard />
+            <DistrictsLeaderboard filter={filter} />
             <EventSearch filter={filter} />
             {/* <Divider className="col-span-4">
         <h2 className="text-tremor-content-strong text-2xl">Search</h2>

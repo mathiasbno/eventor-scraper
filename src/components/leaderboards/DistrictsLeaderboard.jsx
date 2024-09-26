@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 
 import { supabase } from "../../supabaseClient";
 
-export function DistrictsLeaderboard() {
+export function DistrictsLeaderboard(props) {
+  const { filter } = props;
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
 
@@ -15,6 +16,7 @@ export function DistrictsLeaderboard() {
         "get_parent_org_stats_by_year",
         {
           year_param: new Date().getFullYear(),
+          discipline_list: filter.disciplines,
         }
       );
 
@@ -27,7 +29,7 @@ export function DistrictsLeaderboard() {
     };
 
     fetchData();
-  }, []);
+  }, [filter]);
 
   return (
     <Card className="col-span-2" decoration="top" decorationColor="emerald">
@@ -43,7 +45,7 @@ export function DistrictsLeaderboard() {
             <ListItem key={`district-${index}`}>
               <p>
                 <span className="text-tremor-content-strong font-medium">
-                  {item.parentOrgName}
+                  {item.parentorgname}
                 </span>
               </p>
               <span className="font-medium">{item.total_starts}</span>
