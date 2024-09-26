@@ -1,3 +1,19 @@
+function ensureArray(item) {
+  return Array.isArray(item) ? item : [item];
+}
+
+function removeDuplicates(data, key) {
+  const uniqueEntries = data.reduce((acc, current) => {
+    const uniqueKey = current[key]; // Use the dynamic key passed as a parameter
+    if (!acc.has(uniqueKey)) {
+      acc.set(uniqueKey, current);
+    }
+    return acc;
+  }, new Map());
+
+  return Array.from(uniqueEntries.values());
+}
+
 export const filterAndMergeRunners = (data) => {
   // Filter out duplicates based on personId, keeping those with empty personId
   const filteredData = data
@@ -11,56 +27,73 @@ export const filterAndMergeRunners = (data) => {
   return filteredData;
 };
 
-export const formatRunners = (results) => {
-  const data = results
-    .map((item) => {
-      if (!item.personResult) {
-        return [];
-      }
+export const formatRunners = (results, event) => {
+  const { eventForm } = event;
 
-      return Array.isArray(item.personResult)
-        ? item.personResult
-        : [item.personResult];
-    })
-    .flat()
-    .filter((item) => Boolean(item?.person?.personId))
-    .map((item) => {
-      const birthDate = !!item.person?.birthDate?.date
-        ? new Date(item.person?.birthDate?.date)?.toISOString()
-        : null;
+  if (eventForm === "RelaySingleDay") {
+    results = results
+      .map((r) =>
+        ensureArray(r.teamResult).map((item) => item.teamMemberResult)
+      )
+      .flat(Infinity)
+      .map((item) => ({
+        person: item.person,
+        organisation: item.organisation,
+      }))
+      .filter((item) => Boolean(item?.person?.personId));
+  } else {
+    results = results
+      .map((item) => {
+        if (!item.personResult) {
+          return [];
+        }
 
-      // if (item?.organisation?.organisationId === "16") console.log(item);
+        return ensureArray(item.personResult)
+          ? item.personResult
+          : [item.personResult];
+      })
+      .flat()
+      .filter((item) => Boolean(item?.person?.personId));
+  }
 
-      return {
-        personId: item.person.personId,
-        gender: item.person.sex,
-        fullName:
-          item.person.personName.given._ + " " + item.person.personName.family,
-        birthDate: birthDate,
-        nationality: item.person.nationality?.country?.name[0]._,
-        organisationId: item?.organisation?.organisationId,
-      };
-    });
+  const data = results.map((item) => {
+    const birthDate = !!item.person?.birthDate?.date
+      ? new Date(item.person?.birthDate?.date)?.toISOString()
+      : null;
+
+    return {
+      personId: item.person.personId,
+      gender: item.person.sex,
+      fullName:
+        item.person.personName.given._ + " " + item.person.personName.family,
+      birthDate: birthDate,
+      nationality: item.person.nationality?.country?.name[0]._,
+      organisationId: item?.organisation?.organisationId,
+    };
+  });
 
   return data;
 };
 
 export const formatResults = (results, event) => {
-  const { eventId } = event;
+  const { eventId, eventForm } = event;
   const data = results
     .map((item) => {
       if (!item.personResult) {
         return [];
       }
 
-      const personResult = Array.isArray(item.personResult)
-        ? item.personResult
-        : [item.personResult];
+      const personResult = ensureArray(item.personResult);
 
       return [
         ...personResult.map((person) => {
+          const resultId =
+            person.result?.resultId ||
+            person.raceResult.result?.resultId ||
+            null;
+
           return {
-            resultId: person.result?.resultId || null,
+            resultId: resultId,
             classId: item.eventClass?.eventClassId,
             eventId: eventId,
             personId: person.person.personId,
@@ -81,7 +114,7 @@ export const formatResults = (results, event) => {
 
 export const formatEntries = (_entries, event) => {
   const { eventId } = event;
-  let entries = Array.isArray(_entries) ? _entries : [_entries];
+  let entries = ensureArray(_entries);
 
   const data = entries
     .map((item) => {
@@ -106,7 +139,7 @@ export const formatEntries = (_entries, event) => {
     })
     .flat();
 
-  return data;
+  return removeDuplicates(data, "classId");
 };
 
 export const formatClasses = (results, event) => {
@@ -181,7 +214,7 @@ export const formatEntryFees = (entryFees, event) => {
 };
 
 export const formatRaceData = (_results, _entries, _entryFees, event) => {
-  const runners = formatRunners(_results);
+  const runners = formatRunners(_results, event);
 
   const classes = formatClasses(_results, event);
 
@@ -209,34 +242,47 @@ export const formatEvents = (events) => {
       item
     );
 
-    // Todo facilitate for multiole organisers
-    const organisationId = Array.isArray(item.organiser.organisationId)
-      ? item.organiser.organisationId[0]
-      : item.organiser.organisationId;
+    let organisationId = ensureArray(
+      item.organiser.organisationId ||
+        item.organiser.organisation.organisationId
+    ).filter(Boolean);
 
-    const disciplineId = Array.isArray(item.disciplineId)
-      ? item.disciplineId[0]
-      : item.disciplineId;
+    if (!organisationId.length && item.organiser.organisation.length) {
+      organisationId = item.organiser.organisation?.map(
+        (item) => item.organisationId
+      );
+    }
 
-    if (organisationId === "16")
-      console.log(item.eventId, item.organiser.organisationId);
+    const disciplineId = ensureArray(item.disciplineId);
+
+    const numberOfEntries =
+      item.competiorCount[0]?.numberOfEntries === "0"
+        ? entries.length
+        : parseInt(item.competiorCount[0]?.numberOfEntries || 0);
+
+    let numberOfStarts =
+      item.competiorCount[0]?.numberOfStarts === "0"
+        ? results.length
+        : parseInt(item.competiorCount[0]?.numberOfStarts || 0);
+
+    // If we dont have any results or there are no registered starts on the event we just asume that
+    // it was at least as many starts as entries
+    if (numberOfStarts === 0) {
+      numberOfStarts = numberOfEntries;
+    }
 
     return {
       event: {
         eventId: item.eventId,
         name: item.name,
-        organiserId: organisationIdRemap(organisationId),
+        organiserId: organisationId.map((item) => organisationIdRemap(item)),
         startDate: new Date(item.startDate.date).toISOString(),
-        disciplineId: disciplineId,
+        disciplineId: disciplineId[0],
         classificationId: item.eventClassificationId,
         distance: item.eventRace?.raceDistance,
         lightConditions: item.eventRace?.raceLightCondition,
-        numberOfEntries: parseInt(
-          item.competiorCount[0]?.numberOfEntries || entries.length
-        ),
-        numberOfStarts: parseInt(
-          item.competiorCount[0]?.numberOfStarts || results.length
-        ),
+        numberOfEntries: numberOfEntries,
+        numberOfStarts: numberOfStarts,
         location: item.eventRace?.eventCenterPosition,
         punchingUnitType: item.punchingUnitType?.value,
       },
@@ -255,6 +301,7 @@ export const formatOrganisations = (organisations) => {
   return organisations.map((item) => {
     return {
       organisationId: item.organisationId,
+      type: item.organisationTypeId,
       name: item.name,
       countryName: item.country.name[0],
       parentOrganisationId: item.parentOrganisation?.organisationId,
@@ -265,8 +312,7 @@ export const formatOrganisations = (organisations) => {
 const organisationIdRemap = (organisationId) => {
   if (organisationId === "18") {
     return "4"; // Agder O-krets -> Agder O-krets
-  }
-  if (organisationId === "7") {
+  } else if (organisationId === "7") {
     return "12"; // Oppland -> Innlandet
   }
 

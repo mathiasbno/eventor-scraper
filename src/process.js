@@ -15,6 +15,8 @@ const supabase = createClient(
   process.env.SUPABASE_PUBLIC_ANON_KEY
 );
 
+const blackListedOrganisations = ["3591"];
+
 const nukeDate = async () => {
   const { data: eventsData } = await supabase
     .from("events")
@@ -68,7 +70,24 @@ const fetchOrgs = async () => {
 const fetchEvent = async (id) => {
   return await fetch(`${process.env.API_PATH}/event/${id}`)
     .then((response) => response.json())
-    .then((event) => event)
+    .then(async (_event) => {
+      const event = _event[0];
+      const [competiorCount, eventResults, eventEntries, eventEntryfees] =
+        await Promise.all([
+          fetchWithRetry(
+            `${process.env.API_PATH}/competitorcount/${event.eventId}`
+          ),
+          fetchWithRetry(`${process.env.API_PATH}/results/${event.eventId}`),
+          fetchWithRetry(`${process.env.API_PATH}/entries/${event.eventId}`),
+          fetchWithRetry(`${process.env.API_PATH}/entryfees/${event.eventId}`),
+        ]);
+      event.competiorCount = competiorCount;
+      event.results = eventResults;
+      event.entries = eventEntries;
+      event.entryfees = eventEntryfees;
+
+      return event;
+    })
     .catch((err) => console.error(err));
 };
 
@@ -152,13 +171,14 @@ const insertData = async (formattedEvents, startDate, toDate) => {
     .from("events")
     .upsert(
       formattedEvents.map((item) => item.event),
-      { onConflict: "eventId" }
+      { onConflict: "eventId", ignoreDuplicates: false }
     )
     .select();
   const { data: classesData, error: classesError } = await supabase
     .from("classes")
     .upsert(formattedEvents.map((item) => item.classes).flat(), {
       onConflict: "classId",
+      ignoreDuplicates: false,
     })
     .select();
   const { data: runnersData, error: runnersError } = await supabase
@@ -167,6 +187,7 @@ const insertData = async (formattedEvents, startDate, toDate) => {
       filterAndMergeRunners(formattedEvents.map((item) => item.runners).flat()),
       {
         onConflict: "personId",
+        ignoreDuplicates: false,
       }
     )
     .select();
@@ -174,12 +195,21 @@ const insertData = async (formattedEvents, startDate, toDate) => {
     .from("results")
     .upsert(formattedEvents.map((item) => item.results).flat(), {
       onConflict: "resultId",
+      ignoreDuplicates: false,
     })
     .select();
   const { data: entriesData, error: entriesError } = await supabase
     .from("entries")
     .upsert(formattedEvents.map((item) => item.entries).flat(), {
       onConflict: "entryId",
+      ignoreDuplicates: false,
+    })
+    .select();
+  const { data: entryFeesData, error: entryFeesError } = await supabase
+    .from("entryfees")
+    .upsert(formattedEvents.map((item) => item.entryFees).flat(), {
+      onConflict: "entryFeeId",
+      ignoreDuplicates: true,
     })
     .select();
 
@@ -195,6 +225,8 @@ const insertData = async (formattedEvents, startDate, toDate) => {
   if (resultsError) console.error("Results Error:", resultsError);
   console.log(`Inserted ${entriesData?.length} entries`);
   if (entriesError) console.error("Entries Error:", entriesError);
+  console.log(`Inserted ${entryFeesData?.length} entry fees`);
+  if (entryFeesError) console.error("Entry fees Error:", entryFeesError);
 };
 
 export const fetchEventsAndInsert = async (
@@ -225,7 +257,15 @@ export const fetchEventsAndInsert = async (
     };
 
     const events = await fetchEvents(options);
-    const formattedEvents = formatEvents(events);
+    let formattedEvents = formatEvents(events);
+    formattedEvents = formattedEvents.filter(
+      (item) =>
+        !item.event.organiserId.some((r) =>
+          blackListedOrganisations.includes(r)
+        )
+    );
+
+    // console.log(formattedEvents.map((item) => item.event).flat());
 
     if (!dryrun) {
       await insertData(formattedEvents, options.fromDate, options.toDate);
@@ -256,6 +296,11 @@ export const fetchEventsAndInsert = async (
         `Fetched ${
           formattedEvents.map((item) => item.entries).flat()?.length
         } entries`
+      );
+      console.log(
+        `Fetched ${
+          formattedEvents.map((item) => item.entryFees).flat()?.length
+        } entry fees`
       );
     }
 
