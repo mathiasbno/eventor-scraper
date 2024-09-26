@@ -12,9 +12,10 @@ export function BirthYearLeaderboard() {
     setData([]);
     const fetchData = async () => {
       const { data, error } = await supabase
-        .rpc("get_runners_by_birth_year_year", {
-          birth_year_param: birthYear,
-          year_param: new Date().getFullYear(),
+        .rpc("get_runners_for_year", {
+          birth_year: birthYear,
+          organisation_id: null,
+          year: new Date().getFullYear(),
         })
         .limit(10);
 
@@ -50,7 +51,7 @@ export function BirthYearLeaderboard() {
                 </span>
                 <span> ({item.organisationName})</span>
               </p>
-              <span className="font-medium">{item.total_results}</span>
+              <span className="font-medium">{item.total_starts}</span>
             </ListItem>
           ))}
         </List>
