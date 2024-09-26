@@ -119,11 +119,11 @@ export function AgeChartCohort(props) {
 
   return (
     <Card
-      className="flex flex-col content-center justify-center col-span-4"
+      className="flex flex-col content-center justify-center col-span-2"
       decoration="top"
       decorationColor="fuchsia"
     >
-      <div className="flex justify-between items-start md:items-center md:flex-row flex-col mb-2 gap-2">
+      <div className="flex justify-between items-start flex-col mb-2 gap-2">
         <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">
           Antall starter pr årskull
         </h3>

@@ -64,7 +64,7 @@ export function EventsChartCompare(props) {
     >
       <div className="flex justify-between items-start md:items-center md:flex-row flex-col mb-2 gap-2">
         <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">
-          Sammenlign starter pr år
+          Starter pr år
         </h3>
 
         <div className="flex md:flex-row flex-col items-start justify-between md:items-center gap-3">
@@ -130,7 +130,7 @@ export function EventsChartCompare(props) {
         )}
       </div>
       <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">
-        Data til og med sist uke
+        Data for inneværende år viser tall til og med sist uke
       </p>
     </Card>
   );

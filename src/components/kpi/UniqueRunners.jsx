@@ -25,18 +25,18 @@ export function UniqueRunners(props) {
       } else {
         const sortedData = data.sort((a, b) => b.event_year - a.event_year);
         setData(sortedData);
-        setDelta(
-          (sortedData[0]?.total_unique_runners /
-            sortedData[1]?.total_unique_runners -
-            1) *
-            100
-        );
         setLoading(false);
       }
     };
 
     fetchData();
   }, [filter]);
+
+  useEffect(() => {
+    setDelta(
+      (data[0]?.total_unique_runners / data[1]?.total_unique_runners - 1) * 100
+    );
+  }, [data]);
 
   return (
     <Card

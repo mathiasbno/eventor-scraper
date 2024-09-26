@@ -66,8 +66,6 @@ export function PageConfig(props) {
               Disse filterne vil påvirke <i>nesten</i> alle grafer og tabeller
               på siden.
               <br />
-              Filterne blir aktivert automatisk ved endring.
-              <br />
               Når ingen filter er valgt hentes data for alle gren og kretser.
             </p>
           </div>

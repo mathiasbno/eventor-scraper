@@ -25,15 +25,16 @@ export function EventsInYear(props) {
       } else {
         const sortedData = data.sort((a, b) => b.event_year - a.event_year);
         setData(sortedData);
-        setDelta(
-          (sortedData[0]?.total_events / sortedData[1]?.total_events - 1) * 100
-        );
         setLoading(false);
       }
     };
 
     fetchData();
   }, [filter]);
+
+  useEffect(() => {
+    setDelta((data[0]?.total_events / data[1]?.total_events - 1) * 100);
+  }, [data]);
 
   return (
     <Card

@@ -146,7 +146,7 @@ export function DistanceChart(props) {
         )}
       </div>
       <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">
-        Data som målt på samme tidspunkt foregående år
+        Data sammenlignet med samme dato som tidligere år
       </p>
     </Card>
   );

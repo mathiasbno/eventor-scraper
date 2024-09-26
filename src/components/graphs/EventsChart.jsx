@@ -17,7 +17,12 @@ export function EventsChart(props) {
 
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
-  const [localFilter, setLocalFilter] = useState(["Alle starter"]);
+  const [localFilter, setLocalFilter] = useState([
+    "Orientering",
+    "Skiorientering",
+    "Pre-o",
+    "MTBO",
+  ]);
   const [granularity, setGranularity] = useState("year");
 
   useEffect(() => {
@@ -79,7 +84,7 @@ export function EventsChart(props) {
 
           <MultiSelect
             className="w-64"
-            defaultValue={["Alle starter"]}
+            defaultValue={["Orientering", "Skiorientering", "Pre-o", "MTBO"]}
             onValueChange={(e) => setLocalFilter(e)}
           >
             {Object.keys(lookup)
@@ -110,7 +115,7 @@ export function EventsChart(props) {
         )}
       </div>
       <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">
-        Data som målt på samme tidspunkt foregående år
+        Data sammenlignet med samme dato som tidligere år
       </p>
     </Card>
   );

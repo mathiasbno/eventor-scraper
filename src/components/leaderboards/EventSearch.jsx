@@ -135,7 +135,7 @@ export function EventSearch(props) {
                         </a>
                         <span>
                           {" "}
-                          ({item.organisationName} -{" "}
+                          ({item.organisationNames} -{" "}
                           {new Date(item.startDate).getFullYear()})
                         </span>
                       </p>
