@@ -68,7 +68,7 @@ export const formatRunners = (results, event) => {
         item.person.personName.given._ + " " + item.person.personName.family,
       birthDate: birthDate,
       nationality: item.person.nationality?.country?.name[0]._,
-      organisationId: item?.organisation?.organisationId,
+      organisationId: organisationIdRemap(item?.organisation?.organisationId),
     };
   });
 
@@ -313,7 +313,9 @@ const organisationIdRemap = (organisationId) => {
   if (organisationId === "18") {
     return "4"; // Agder O-krets -> Agder O-krets
   } else if (organisationId === "7") {
-    return "12"; // Oppland -> Innlandet
+    return "12"; // Hedmark -> Innlandet
+  } else if (organisationId === "16") {
+    return "19"; // Telemark -> Vestfold og Telemark
   }
 
   return organisationId;
