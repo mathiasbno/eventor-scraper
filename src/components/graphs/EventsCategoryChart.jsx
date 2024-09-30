@@ -11,7 +11,7 @@ export function EventsCategoryChart(props) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
   const [granularity, setGranularity] = useState("year");
-  const [dataPoint, setDataPoint] = useState("number_of_events");
+  const [dataPoint, setDataPoint] = useState("total_starts");
 
   useEffect(() => {
     setLoading(true);
@@ -60,7 +60,7 @@ export function EventsCategoryChart(props) {
         <div className="flex justify-between items-center gap-3">
           <Select
             className="w-64"
-            defaultValue="number_of_events"
+            defaultValue="total_starts"
             onValueChange={(value) => setDataPoint(value)}
           >
             <SelectItem value="number_of_events">Antal løp</SelectItem>
@@ -99,7 +99,11 @@ export function EventsCategoryChart(props) {
         )}
       </div>
       <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">
-        Data sammenlignet med samme dato som tidligere år
+        {`Data sammenlignet med samme dato som tidligere år (feks: ${new Date().toLocaleDateString(
+          "nb-NO"
+        )} sammenlignet med data frem til ${new Date(
+          new Date().setFullYear(new Date().getFullYear() - 4)
+        ).toLocaleDateString("nb-NO")})`}
       </p>
     </Card>
   );

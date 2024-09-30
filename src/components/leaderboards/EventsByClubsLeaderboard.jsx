@@ -53,6 +53,10 @@ export function EventsByClubsLeaderboard(props) {
       ) : (
         <Spinner />
       )}
+      <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">
+        Antall starter registrert på løp arrangert av klubben. I løp med flere
+        arrangører er startene registrert på alle arrangører av løpet.
+      </p>
     </Card>
   );
 }

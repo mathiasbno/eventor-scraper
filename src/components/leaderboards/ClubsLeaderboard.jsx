@@ -53,6 +53,11 @@ export function ClubsLeaderboard(props) {
       ) : (
         <Spinner />
       )}
+      <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">
+        Antall starter registrert på løpere registrert i klubben ved hver
+        innlastning. Vi holder ikke styr på historiske klubbbytter eller løpere
+        som har flere klubber.
+      </p>
     </Card>
   );
 }

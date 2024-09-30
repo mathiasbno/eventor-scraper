@@ -160,7 +160,11 @@ export function LightConditionsChart(props) {
         )}
       </div>
       <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">
-        Data sammenlignet med samme dato som tidligere år
+        {`Data sammenlignet med samme dato som tidligere år (feks: ${new Date().toLocaleDateString(
+          "nb-NO"
+        )} sammenlignet med data frem til ${new Date(
+          new Date().setFullYear(new Date().getFullYear() - 4)
+        ).toLocaleDateString("nb-NO")})`}
       </p>
     </Card>
   );

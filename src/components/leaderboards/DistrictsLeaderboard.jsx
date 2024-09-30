@@ -12,13 +12,10 @@ export function DistrictsLeaderboard(props) {
   useEffect(() => {
     setLoading(true);
     const fetchData = async () => {
-      const { data, error } = await supabase.rpc(
-        "get_parent_org_stats_by_year",
-        {
-          year_param: new Date().getFullYear(),
-          discipline_list: filter.disciplines,
-        }
-      );
+      const { data, error } = await supabase.rpc("get_disctrict_starts", {
+        year_param: new Date().getFullYear(),
+        discipline_list: filter.disciplines,
+      });
 
       if (error) {
         console.error("Error fetching data:", error);
@@ -33,11 +30,8 @@ export function DistrictsLeaderboard(props) {
 
   return (
     <Card className="col-span-2" decoration="top" decorationColor="emerald">
-      <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong mb-5">
-        <span className="font-medium">
-          Kretser med flest starter i {new Date().getFullYear()}
-        </span>{" "}
-        (starter i løp hvor arrangørklubben er registrert i kretsen)
+      <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong mb-5 font-medium">
+        Kretser med flest starter i {new Date().getFullYear()}
       </h3>
       {!loading ? (
         <List>
@@ -55,6 +49,10 @@ export function DistrictsLeaderboard(props) {
       ) : (
         <Spinner />
       )}
+      <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">
+        Antall starter registrert på løpere registrert i klubben som tilhører
+        hver krets.
+      </p>
     </Card>
   );
 }

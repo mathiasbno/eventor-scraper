@@ -79,18 +79,27 @@ export const formatResults = (results, event) => {
   const { eventId, eventForm } = event;
   const data = results
     .map((item) => {
-      if (!item.personResult) {
+      if (!item.personResult?.length && !item.teamResult?.length) {
         return [];
       }
 
       const personResult = ensureArray(item.personResult);
+      const teamResult = ensureArray(
+        item?.teamResult?.map((item) => item?.teamMemberResult)
+      ).flat();
+
+      let results = personResult;
+
+      if (eventForm === "RelaySingleDay") {
+        results = teamResult;
+      }
 
       return [
-        ...personResult.map((person) => {
+        ...results.map((person) => {
           const resultId =
             person.result?.resultId ||
-            person.raceResult.result?.resultId ||
-            null;
+            person.raceResult?.result?.resultId ||
+            eventId + person.bibNumber;
 
           return {
             resultId: resultId,
@@ -264,6 +273,14 @@ export const formatEvents = (events) => {
       item.competiorCount[0]?.numberOfStarts === "0"
         ? results.length
         : parseInt(item.competiorCount[0]?.numberOfStarts || 0);
+
+    // Make exceptions for relay events so we count the number of starts as
+    // personal starts and not team starts
+    if (item.eventForm === "RelaySingleDay") {
+      if (numberOfStarts < results.length) {
+        numberOfStarts = results.length;
+      }
+    }
 
     // If we dont have any results or there are no registered starts on the event we just asume that
     // it was at least as many starts as entries
