@@ -265,8 +265,6 @@ export const fetchEventsAndInsert = async (
         )
     );
 
-    // console.log(formattedEvents.map((item) => item.event).flat());
-
     if (!dryrun) {
       await insertData(formattedEvents, options.fromDate, options.toDate);
     } else {
