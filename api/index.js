@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 
-import { fetchEventsAndInsert } from "../src/process.js";
+import { fetchEventsAndInsert, fetchAndInsertOrgs } from "../src/process.js";
 
 dotenv.config();
 
@@ -33,6 +33,7 @@ app.get("/api/cron", async (req, res) => {
     const endDate = new Date();
     endDate.setDate(endDate.getDate() - 7);
 
+    await fetchAndInsertOrgs();
     await fetchEventsAndInsert(startDate, endDate, 7);
 
     res.status(200).end("Events imported for the last 7 days");
