@@ -98,18 +98,48 @@ const fetchEntryFees = async (id) => {
     .catch((err) => console.error(err));
 };
 
-const fetchWithRetry = async (url, options, retries = 3, delay = 5000) => {
-  try {
-    const response = await fetch(url, options);
-    if (!response.ok) throw new Error("Fetch failed");
-    return response.json();
-  } catch (error) {
-    if (retries > 0) {
-      console.warn(`Fetch failed, retrying in ${delay / 1000} seconds...`);
-      await new Promise((resolve) => setTimeout(resolve, delay));
-      return fetchWithRetry(url, options, retries - 1, delay);
-    } else {
-      throw error;
+const mergeDuplicateRunners = async (
+  step = 1,
+  yearStart = 2011,
+  yearEnd = new Date().getFullYear()
+) => {
+  let year = yearStart;
+
+  while (year <= yearEnd) {
+    console.time("fetch");
+    const { data, error } = await supabase.rpc("handle_duplicate_runners", {
+      step: step,
+      year: year,
+    });
+    // const { data, error } = await supabase.rpc("get_duplicate_runners");
+    console.log(year);
+    console.log(data, error);
+    year++;
+    console.timeEnd("fetch");
+  }
+};
+
+const removeRunnersWithoutResult = async () => {
+  console.time("remove runners");
+  const { data, error } = await supabase.rpc("clean_up_runners");
+  console.log(data, error);
+  console.timeEnd("remove runners");
+};
+
+const fetchWithRetry = async (url, options = {}, retries = 3) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url, options);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      return data;
+    } catch (err) {
+      if (i === retries - 1) {
+        throw err;
+      }
+      console.warn(`Retrying fetch for ${url} (${i + 1}/${retries})`);
     }
   }
 };
@@ -127,34 +157,42 @@ const fetchEvents = async (options) => {
           ["0", "1", "2", "3", "4"].includes(item.eventClassificationId)
         )
         .map(async (event) => {
-          const [competiorCount, eventResults, eventEntries, eventEntryfees] =
-            await Promise.all([
-              fetchWithRetry(
-                `${process.env.API_PATH}/competitorcount/${event.eventId}`
-              ),
-              fetchWithRetry(
-                `${process.env.API_PATH}/results/${event.eventId}`
-              ),
-              fetchWithRetry(
-                `${process.env.API_PATH}/entries/${event.eventId}`
-              ),
-              fetchWithRetry(
-                `${process.env.API_PATH}/entryfees/${event.eventId}`
-              ),
-            ]);
-          event.competiorCount = competiorCount;
-          event.results = eventResults;
-          event.entries = eventEntries;
-          event.entryfees = eventEntryfees;
+          try {
+            const [competiorCount, eventResults, eventEntries, eventEntryfees] =
+              await Promise.all([
+                fetchWithRetry(
+                  `${process.env.API_PATH}/competitorcount/${event.eventId}`
+                ),
+                fetchWithRetry(
+                  `${process.env.API_PATH}/results/${event.eventId}`
+                ),
+                fetchWithRetry(
+                  `${process.env.API_PATH}/entries/${event.eventId}`
+                ),
+                fetchWithRetry(
+                  `${process.env.API_PATH}/entryfees/${event.eventId}`
+                ),
+              ]);
+
+            event.competiorCount = competiorCount;
+            event.results = eventResults;
+            event.entries = eventEntries;
+            event.entryfees = eventEntryfees;
+          } catch (err) {
+            console.error(
+              `Error fetching data for event ${event.eventId}:`,
+              err
+            );
+          }
           return event;
         })
     );
   } catch (err) {
-    console.error(err);
+    console.error("Error fetching events:", err);
   }
 };
 
-const fetchAndInsertOrgs = async () => {
+export const fetchAndInsertOrgs = async () => {
   const organisations = await fetchOrgs();
   const formattedOrganisations = formatOrganisations(organisations);
 
@@ -170,21 +208,27 @@ const insertData = async (formattedEvents, startDate, toDate) => {
   const { data: eventsData, error: eventsError } = await supabase
     .from("events")
     .upsert(
-      formattedEvents.map((item) => item.event),
-      { onConflict: "eventId", ignoreDuplicates: false }
+      formattedEvents.flatMap((item) => item.event),
+      {
+        onConflict: "eventId",
+        ignoreDuplicates: false,
+      }
     )
     .select();
   const { data: classesData, error: classesError } = await supabase
     .from("classes")
-    .upsert(formattedEvents.map((item) => item.classes).flat(), {
-      onConflict: "classId",
-      ignoreDuplicates: false,
-    })
+    .upsert(
+      formattedEvents.flatMap((item) => item.classes),
+      {
+        onConflict: "classId",
+        ignoreDuplicates: false,
+      }
+    )
     .select();
   const { data: runnersData, error: runnersError } = await supabase
     .from("runners")
     .upsert(
-      filterAndMergeRunners(formattedEvents.map((item) => item.runners).flat()),
+      filterAndMergeRunners(formattedEvents.flatMap((item) => item.runners)),
       {
         onConflict: "personId",
         ignoreDuplicates: false,
@@ -193,28 +237,37 @@ const insertData = async (formattedEvents, startDate, toDate) => {
     .select();
   const { data: resultsData, error: resultsError } = await supabase
     .from("results")
-    .upsert(formattedEvents.map((item) => item.results).flat(), {
-      onConflict: "resultId",
-      ignoreDuplicates: false,
-    })
+    .upsert(
+      formattedEvents.flatMap((item) => item.results),
+      {
+        onConflict: "resultId",
+        ignoreDuplicates: false,
+      }
+    )
     .select();
   const { data: entriesData, error: entriesError } = await supabase
     .from("entries")
-    .upsert(formattedEvents.map((item) => item.entries).flat(), {
-      onConflict: "entryId",
-      ignoreDuplicates: false,
-    })
+    .upsert(
+      formattedEvents.flatMap((item) => item.entries),
+      {
+        onConflict: "entryId",
+        ignoreDuplicates: false,
+      }
+    )
     .select();
   const { data: entryFeesData, error: entryFeesError } = await supabase
     .from("entryfees")
-    .upsert(formattedEvents.map((item) => item.entryFees).flat(), {
-      onConflict: "entryFeeId",
-      ignoreDuplicates: true,
-    })
+    .upsert(
+      formattedEvents.flatMap((item) => item.entryFees),
+      {
+        onConflict: "entryFeeId",
+        ignoreDuplicates: true,
+      }
+    )
     .select();
 
-  console.log("=====================================");
   console.log(`from ${startDate} to ${toDate}`);
+  console.log("------------------------------------");
   console.log(`Inserted ${eventsData?.length} events`);
   if (eventsError) console.error("Events Error:", eventsError);
   console.log(`Inserted ${classesData?.length} classes`);
@@ -227,6 +280,29 @@ const insertData = async (formattedEvents, startDate, toDate) => {
   if (entriesError) console.error("Entries Error:", entriesError);
   console.log(`Inserted ${entryFeesData?.length} entry fees`);
   if (entryFeesError) console.error("Entry fees Error:", entryFeesError);
+  console.log("------------------------------------");
+};
+
+const nameMap = new Map();
+const detectNameChanges = (data) => {
+  const changes = [];
+
+  data
+    .flatMap((item) => item.runners)
+    .forEach((runner) => {
+      const { personId, fullName } = runner;
+      if (nameMap.has(personId)) {
+        const oldName = nameMap.get(personId);
+        if (oldName !== fullName) {
+          changes.push({ personId, oldName, newName: fullName });
+          nameMap.set(personId, fullName); // Update to the new name
+        }
+      } else {
+        nameMap.set(personId, fullName);
+      }
+    });
+
+  return changes;
 };
 
 export const fetchEventsAndInsert = async (
@@ -256,7 +332,11 @@ export const fetchEventsAndInsert = async (
       toDate: toDate.toISOString(),
     };
 
+    console.log(">>>> START");
+    console.time("fetch");
     const events = await fetchEvents(options);
+    console.timeEnd("fetch");
+    console.time("format");
     let formattedEvents = formatEvents(events);
     formattedEvents = formattedEvents.filter(
       (item) =>
@@ -264,53 +344,106 @@ export const fetchEventsAndInsert = async (
           blackListedOrganisations.includes(r)
         )
     );
+    console.timeEnd("format");
 
     if (!dryrun) {
+      console.time("insert");
       await insertData(formattedEvents, options.fromDate, options.toDate);
+      console.timeEnd("insert");
+      console.log(">>>> END");
     } else {
-      console.log("=====================================");
+      console.log("---- DRY RUN");
+      console.log(
+        detectNameChanges(formattedEvents),
+        formattedEvents
+          .flatMap((item) => item.runners)
+          .filter(
+            (item) =>
+              item.fullName === "" ||
+              item.fullName === null ||
+              item.fullName === undefined ||
+              item.fullName.includes("undefined")
+          ),
+        formattedEvents
+          .flatMap((item) => item.results)
+          .filter(
+            (item) =>
+              item.personId === "" ||
+              item.personId === null ||
+              item.personId === undefined ||
+              item.personId.includes("undefined")
+          )
+      );
       console.log(`from ${startDate} to ${toDate}`);
+      console.log("------------------------------------");
       console.log(
         `Fetched ${
-          formattedEvents.map((item) => item.event).flat()?.length
+          formattedEvents.flatMap((item) => item.event)?.length
         } events`
       );
       console.log(
         `Fetched ${
-          formattedEvents.map((item) => item.classes).flat()?.length
+          formattedEvents.flatMap((item) => item.classes)?.length
         } classes`
       );
       console.log(
         `Fetched ${
-          formattedEvents.map((item) => item.runners).flat()?.length
+          formattedEvents.flatMap((item) => item.runners)?.length
         } runners`
       );
       console.log(
         `Fetched ${
-          formattedEvents.map((item) => item.results).flat()?.length
+          formattedEvents.flatMap((item) => item.results)?.length
         } results`
       );
       console.log(
         `Fetched ${
-          formattedEvents.map((item) => item.entries).flat()?.length
+          formattedEvents.flatMap((item) => item.entries)?.length
         } entries`
       );
       console.log(
         `Fetched ${
-          formattedEvents.map((item) => item.entryFees).flat()?.length
+          formattedEvents.flatMap((item) => item.entryFees)?.length
         } entry fees`
       );
+      console.log(">>>> END");
     }
 
     startDate.setDate(startDate.getDate() + granularity);
   }
 };
 
-// // Get the last 7 days of events
+// Get the last 7 days of events
+const startDate = new Date("2024-10-01");
+const endDate = new Date();
 // const startDate = new Date().setDate(new Date().getDate() - 7);
 // const endDate = new Date();
 
-// const granularity = 10; // some times the database times out with larger granularities when there are big races being processed from Eventor
-// const dryrun = true; // set to true if you just want the fetch data and not insert it into the database
+const granularity = 30; // some times the database times out with larger granularities when there are big races being processed from Eventor
+const dryrun = false; // set to true if you just want the fetch data and not insert it into the database
 
-// fetchEventsAndInsert(startDate, endDate, granularity, dryrun);
+// await fetchAndInsertOrgs();
+// await fetchEventsAndInsert(startDate, endDate, granularity, dryrun);
+
+// await mergeDuplicateRunners(1, 2020, 2024);
+// await mergeDuplicateRunners(2, 2020, 2024);
+// await removeRunnersWithoutResult();
+
+// const event = await fetchEvent(1351);
+// let formattedEvents = formatEvents([event]);
+// console.log(
+//   //   formattedEvents[0].results.map((item) => ({
+//   //     id: formattedEvents[0].runners.find((i) => i.personId === item.personId)
+//   //       .personId,
+//   //     name: formattedEvents[0].runners.find((i) => i.personId === item.personId)
+//   //       .fullName,
+//   //   })),
+//   formattedEvents[0].runners.find((i) => i.personId === "37009"),
+//   formattedEvents[0].classes.length,
+//   formattedEvents[0].entries.length,
+//   formattedEvents[0].runners.length,
+//   formattedEvents[0].results.length,
+//   formattedEvents[0].event
+// );
+
+// insertData(formattedEvents);

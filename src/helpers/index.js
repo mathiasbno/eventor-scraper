@@ -2,6 +2,12 @@ function ensureArray(item) {
   return Array.isArray(item) ? item : [item];
 }
 
+function toCamelcase(str) {
+  return str
+    .toLowerCase()
+    .replace(/[^a-åA-Å0-9]+(.)/g, (m, chr) => chr.toUpperCase());
+}
+
 function removeDuplicates(data, key) {
   const uniqueEntries = data.reduce((acc, current) => {
     const uniqueKey = current[key]; // Use the dynamic key passed as a parameter
@@ -45,56 +51,44 @@ export const formatRunners = (results, entries, event) => {
 
   if (eventForm === "RelaySingleDay") {
     const items = results.length
-      ? results
-          .map((r) =>
-            ensureArray(r.teamResult).map((team) => {
-              return ensureArray(team.teamMemberResult).map((member) => ({
-                ...member,
-                organisation: team.organisation,
-              }));
-            })
+      ? results.flatMap((r) =>
+          ensureArray(r.teamResult).flatMap((team) =>
+            ensureArray(team.teamMemberResult).map((member) => ({
+              ...member,
+              organisation: team.organisation,
+            }))
           )
-          .flat(Infinity)
-          .filter(Boolean)
-      : ensureArray(entries)
-          .map((item) => ensureArray(item.teamCompetitor))
-          .flat(Infinity)
-          .filter(Boolean);
+        )
+      : ensureArray(entries).flatMap((item) =>
+          ensureArray(item.teamCompetitor)
+        );
 
     results = items
       .map((item) => {
         return {
-          person: item.person,
-          organisation: item.organisationId,
+          person: item?.person,
+          organisation: item?.organisationId,
         };
       })
       .filter((p) => Boolean(p.person));
   } else {
-    results = results
-      .map((item) => {
-        if (!item.personResult) {
-          return [];
-        }
-
-        return ensureArray(item.personResult)
-          ? item.personResult
-          : [item.personResult];
-      })
-      .flat();
+    results = results.flatMap((item) =>
+      item.personResult ? ensureArray(item.personResult) : []
+    );
   }
 
-  const data = results.map((item) => {
-    const fullName =
-      item.person.personName.given._ + " " + item.person.personName.family;
+  const data = results.map((item, index) => {
+    const fullName = `${item.person.personName.given._} ${item.person.personName.family}`;
 
-    const birthDate = !!item.person?.birthDate?.date
-      ? new Date(item.person?.birthDate?.date)?.toISOString()
+    const birthDate = item.person?.birthDate?.date
+      ? new Date(item.person.birthDate.date).toISOString()
       : null;
 
     const country = item.person.nationality?.country?.name
-      ? item.person.nationality?.country?.name[0]?._
+      ? item.person.nationality.country.name[0]?._
       : null;
-    const personId = item.person.personId || fullName;
+
+    const personId = `${item.person.personId}-${toCamelcase(fullName)}`;
 
     return {
       personId: personId,
@@ -114,89 +108,70 @@ export const formatResults = (results, entries, event) => {
 
   const items = results.length ? results : ensureArray(entries);
 
-  const data = items
-    .map((item) => {
-      const personResult = ensureArray(item.personResult).filter(Boolean);
-      const teamCompetitor = ensureArray(item.teamCompetitor).filter((p) =>
-        Boolean(p?.person)
-      );
-      const teamResult = ensureArray(item?.teamResult)
-        .map((item) => item?.teamMemberResult)
-        .filter(Boolean)
-        .flat();
+  const data = items.flatMap((item) => {
+    const personResult = ensureArray(item.personResult).filter(Boolean);
+    const teamCompetitor = ensureArray(item.teamCompetitor).filter((p) =>
+      Boolean(p?.person)
+    );
+    const teamResult = ensureArray(item?.teamResult)
+      .flatMap((team) => ensureArray(team?.teamMemberResult))
+      .filter(Boolean);
 
-      // if (!personResult?.length && !teamResult?.length) {
-      //   return [];
-      // }
+    let results = personResult;
 
-      let results = personResult;
+    if (eventForm === "RelaySingleDay") {
+      results = teamResult;
+    }
 
-      if (eventForm === "RelaySingleDay") {
-        results = teamResult;
-      }
+    // If there are not results we use the entries to make an estimate of the results.
+    // This only apoplies to relay events, as thats whats used especially for "Lagkonkuransen"
+    // where many < 12y runners are and we want to track them in the system
+    if (!results.length && eventForm === "RelaySingleDay") {
+      return teamCompetitor.map((entry) => {
+        const fullName = `${entry.person.personName.given._} ${entry.person.personName.family}`;
+        // const personId = entry.person.personId || fullName;
+        const personId = `${entry.person.personId}-${toCamelcase(fullName)}`;
 
-      // If there are not results we use the entries to make an estimate of the results.
-      // This only apoplies to relay events, as thats whats used especially for "Lagkonkuransen"
-      // where many < 12y runners are and we want to track them in the system
-      if (!results.length && eventForm === "RelaySingleDay") {
-        return teamCompetitor.map((entry) => {
-          const fullName =
-            entry.person.personName.given._ +
-            " " +
-            entry.person.personName.family;
+        return {
+          resultId: `${entry.teamCompetitorId}${personId}`,
+          classId: item.entryClass?.eventClassId,
+          eventId: eventId,
+          personId: personId,
+          date: new Date(event?.startDate?.date)?.toISOString(),
+          name: fullName,
+        };
+      });
+    }
 
-          let personId = entry.person.personId || fullName;
+    return results
+      .map((person) => {
+        // If the person did not start or is inactive we dont want to include them in the results
+        if (
+          person.result?.competitorStatus?.value === "DidNotStart" ||
+          person.result?.competitorStatus?.value === "Inactive"
+        ) {
+          return null;
+        }
 
-          return {
-            resultId: entry.teamCompetitorId + personId,
-            classId: item.entryClass?.eventClassId,
-            eventId: eventId,
-            personId: personId,
-            date: new Date(event?.startDate?.date)?.toISOString(),
-            name:
-              entry.person.personName.given._ +
-              " " +
-              entry.person.personName.family,
-          };
-        });
-      }
+        const fullName = `${person.person.personName.given._} ${person.person.personName.family}`;
+        // const personId = person.person.personId || fullName;
+        const personId = `${person.person.personId}-${toCamelcase(fullName)}`;
+        const resultId =
+          person.result?.resultId ||
+          person.raceResult?.result?.resultId ||
+          `${eventId}${person.bibNumber}${personId}`;
 
-      return [
-        ...results.map((person) => {
-          // If the person did not start we dont want to include them in the results
-          if (
-            person.result?.competitorStatus?.value === "DidNotStart" ||
-            person.result?.competitorStatus.value === "Inactive"
-          )
-            return null;
-
-          const fullName =
-            person.person.personName.given._ +
-            " " +
-            person.person.personName.family;
-
-          let personId = person.person.personId || fullName;
-
-          const resultId =
-            person.result?.resultId ||
-            person.raceResult?.result?.resultId ||
-            eventId + person.bibNumber + personId;
-
-          return {
-            resultId: resultId,
-            classId: item.eventClass?.eventClassId,
-            eventId: eventId,
-            personId: personId,
-            date: new Date(event?.startDate?.date)?.toISOString(),
-            name:
-              person.person.personName.given._ +
-              " " +
-              person.person.personName.family,
-          };
-        }),
-      ];
-    })
-    .flat();
+        return {
+          resultId: resultId,
+          classId: item.eventClass?.eventClassId,
+          eventId: eventId,
+          personId: personId,
+          date: new Date(event?.startDate?.date)?.toISOString(),
+          name: fullName,
+        };
+      })
+      .filter(Boolean);
+  });
 
   return filterUniqueByKey(
     data.filter((item) => Boolean(item?.personId)),
@@ -206,30 +181,30 @@ export const formatResults = (results, entries, event) => {
 
 export const formatEntries = (_entries, event) => {
   const { eventId, eventForm } = event;
-  let entries = ensureArray(_entries);
+  const entries = ensureArray(_entries);
 
-  const data = entries
-    .map((item) => {
-      if (eventForm === "RelaySingleDay") {
-        return ensureArray(item.teamCompetitor)
-          .map((teamMember) => ({
-            entryId: item.entryId + teamMember?.person?.personId,
-            classId: item.entryClass.eventClassId,
-            eventId: eventId,
-            personId: teamMember?.person?.personId,
-            date: new Date(event?.startDate?.date)?.toISOString(),
-          }))
-          .filter((item) => Boolean(item.personId));
-      }
+  return [];
 
-      return {
-        entryId: item.entryId,
-        classId: item.entryClass.eventClassId,
-        eventId: eventId,
-        personId: item.competitor?.competitorId,
-      };
-    })
-    .flat();
+  const data = entries.flatMap((item) => {
+    if (eventForm === "RelaySingleDay") {
+      return ensureArray(item.teamCompetitor)
+        .map((teamMember) => ({
+          entryId: `${item.entryId}${teamMember?.person?.personId}`,
+          classId: item.entryClass.eventClassId,
+          eventId: eventId,
+          personId: teamMember?.person?.personId,
+          date: new Date(event?.startDate?.date)?.toISOString(),
+        }))
+        .filter((entry) => Boolean(entry.personId));
+    }
+
+    return {
+      entryId: item.entryId,
+      classId: item.entryClass.eventClassId,
+      eventId: eventId,
+      personId: item.competitor?.competitorId,
+    };
+  });
 
   return removeDuplicates(data, "entryId");
 };
@@ -262,51 +237,20 @@ export const formatClasses = (results, entries, event) => {
 export const formatEntryFees = (entryFees, event) => {
   const { eventId } = event;
 
-  const estimateType = (name) => {
-    if (name?.toLowerCase().includes("voks")) {
-      return "adult";
-    }
-    if (name?.toLowerCase().includes("ungdom")) {
-      return "youth";
-    }
-    if (name?.toLowerCase().includes("barn")) {
-      return "kids";
-    }
-    return "notSpecified";
-  };
-
-  const estimateOrder = (name) => {
-    if (
-      name?.toLowerCase().includes("ordinær") ||
-      name?.toLowerCase().includes("påmelding")
-    ) {
-      return 0;
-    }
-    if (name?.toLowerCase().includes("etteranmelding")) {
-      return 1;
-    }
-    return;
-  };
-
   const estimateClassType = (name) => {
-    if (name?.toLowerCase().includes("åpen")) {
-      return "open";
-    }
-    return "normal";
+    return name?.toLowerCase().includes("åpen") ? "open" : "normal";
   };
 
-  return entryFees.map((item) => {
-    return {
-      eventId: eventId,
-      entryFeeId: item.entryFeeId,
-      name: item.name,
-      amount: parseInt(item.amount._),
-      type: item.type === "elite" ? estimateType(item.name) : item.type,
-      valueOperator: item?.valueOperator,
-      order: estimateOrder(item.name),
-      classType: estimateClassType(item.name),
-    };
-  });
+  return entryFees.map((item) => ({
+    eventId: eventId,
+    entryFeeId: item.entryFeeId,
+    name: item.name,
+    amount: parseInt(item.amount._),
+    type: item.type === "elite" ? estimateType(item.name) : item.type,
+    valueOperator: item?.valueOperator,
+    order: estimateOrder(item.name),
+    classType: estimateClassType(item.name),
+  }));
 };
 
 export const formatRaceData = (_results, _entries, _entryFees, event) => {
@@ -331,7 +275,7 @@ export const formatRaceData = (_results, _entries, _entryFees, event) => {
 };
 
 export const formatEvents = (events) => {
-  const data = events.map((item) => {
+  return events.map((item) => {
     const { classes, entries, results, runners, entryFees } = formatRaceData(
       item.results,
       item.entries,
@@ -345,8 +289,8 @@ export const formatEvents = (events) => {
     ).filter(Boolean);
 
     if (!organisationId.length && item.organiser.organisation.length) {
-      organisationId = item.organiser.organisation?.map(
-        (item) => item.organisationId
+      organisationId = item.organiser.organisation.map(
+        (org) => org.organisationId
       );
     }
 
@@ -365,16 +309,12 @@ export const formatEvents = (events) => {
     // Make exceptions for relay events so we count the number of starts as
     // personal starts and not team starts
     if (item.eventForm === "RelaySingleDay") {
-      if (numberOfEntries < entries.length) {
-        numberOfEntries = entries.length;
-      }
-      if (numberOfStarts < results.length) {
-        numberOfStarts = results.length;
-      }
+      numberOfEntries = Math.max(numberOfEntries, entries.length);
+      numberOfStarts = Math.max(numberOfStarts, results.length);
     }
 
-    // If we dont have any results or there are no registered starts on the event we just asume that
-    // it was at least as many starts as entries
+    // If we don't have any results or there are no registered starts on the event,
+    // we assume that it was at least as many starts as entries
     if (numberOfStarts === 0) {
       numberOfStarts = numberOfEntries;
     }
@@ -383,7 +323,7 @@ export const formatEvents = (events) => {
       event: {
         eventId: item.eventId,
         name: item.name,
-        organiserId: organisationId.map((item) => organisationIdRemap(item)),
+        organiserId: organisationId.map(organisationIdRemap),
         startDate: new Date(item.startDate.date).toISOString(),
         disciplineId: disciplineId[0],
         classificationId: item.eventClassificationId,
@@ -394,15 +334,13 @@ export const formatEvents = (events) => {
         location: item.eventRace?.eventCenterPosition,
         punchingUnitType: item.punchingUnitType?.value,
       },
-      classes: classes,
-      entries: entries,
-      results: results,
-      runners: runners,
-      entryFees: entryFees,
+      classes,
+      entries,
+      results,
+      runners,
+      entryFees,
     };
   });
-
-  return data;
 };
 
 export const formatOrganisations = (organisations) => {
@@ -420,7 +358,7 @@ export const formatOrganisations = (organisations) => {
 const organisationIdRemap = (organisationId) => {
   // If there is no organisationId we set it to "Klubbløs" which is a custom organisationId in the database
   if (!organisationId) {
-    return "16";
+    return null;
   }
 
   if (organisationId === "18") {
@@ -432,6 +370,22 @@ const organisationIdRemap = (organisationId) => {
   }
 
   return organisationId;
+};
+
+const estimateType = (name) => {
+  const lowerName = name?.toLowerCase() || "";
+  if (lowerName?.includes("voks")) return "adult";
+  if (lowerName?.includes("ungdom")) return "youth";
+  if (lowerName?.includes("barn")) return "kids";
+  return "notSpecified";
+};
+
+const estimateOrder = (name) => {
+  const lowerName = name?.toLowerCase();
+  if (lowerName?.includes("ordinær") || lowerName?.includes("påmelding"))
+    return 0;
+  if (lowerName?.includes("etteranmelding")) return 1;
+  return;
 };
 
 const disciplineLookup = (discipline) => {
