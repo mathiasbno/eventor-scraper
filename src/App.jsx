@@ -34,7 +34,6 @@ function App() {
       <Analytics />
       <div className="flex flex-wrap md:grid grid-cols-4 gap-x-4 gap-y-4 p-5 max-w-screen-xl mx-auto">
         <PageConfig filter={filter} setFilter={setFilter} />
-        <MaintenanceMode />
         {filter ? (
           <>
             <StartsInYear filter={filter} />

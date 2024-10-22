@@ -114,7 +114,7 @@ export function EventSearch(props) {
                 className="h-80 mb-5"
                 data={formattedData}
                 index="startDate"
-                autoMinValue={true}
+                autoMinValue={false}
                 categories={["Antall starter"]}
                 colors={["indigo", "rose"]}
                 yAxisWidth={60}
