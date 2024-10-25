@@ -17,9 +17,13 @@ export function PageConfig(props) {
   useEffect(() => {
     const fetchData = async () => {
       const { data: organisationsData, error: organisationsError } =
-        await supabase.rpc("get_organisations_by_parent");
-      const { data: disciplinesData, error: disciplinesError } =
-        await supabase.rpc("get_diciplines");
+        await supabase
+          .from("organisations")
+          .select("organisationId, name")
+          .eq("type", "2");
+      const { data: disciplinesData, error: disciplinesError } = await supabase
+        .from("discipline")
+        .select("disciplineId, name");
 
       if (organisationsError || disciplinesError) {
         console.error(
