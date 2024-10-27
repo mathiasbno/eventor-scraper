@@ -27,6 +27,8 @@ This project is a web application for scraping data from Eventor and displaying 
 EVENTOR_PATH=https://eventor.orientering.no/api/
 EVENTOR_APIKEY=<your-api-key>
 API_PATH=http://localhost:4000/api
+SUPABASE_USER=<your-username>
+SUPABASE_PASSWORD=<your-password>
 ```
 
 ## How to Run the React Project
@@ -85,17 +87,21 @@ If you whish to experiment for yourself on the side you can recreate the databas
 ```sql
   CREATE TABLE classes (id bigint  NOT NULL PRIMARY KEY, created_at timestamp with time zone now() NOT NULL , classId text  NULL , eventId text  NULL , name text  NULL , shortName text  NULL , lowAge smallint  NULL , highAge smallint  NULL , sex character varying  NULL , type text  NULL );
 
+  CREATE TABLE classifications (id bigint  NOT NULL PRIMARY KEY, classificationId text  NULL , classificationName text  NULL );
+
   CREATE TABLE discipline (id bigint  NOT NULL PRIMARY KEY, disciplineId text  NULL , name text  NULL );
 
   CREATE TABLE entries (id bigint  NOT NULL PRIMARY KEY, classId text  NULL , eventId text  NULL , personId text  NULL , date date  NULL , entryId text  NULL );
 
-  CREATE TABLE events (id bigint  NOT NULL PRIMARY KEY, created_at timestamp with time zone now() NOT NULL , eventId text  NULL , name text  NULL , organiserId smallint  NULL , disciplineId text  NULL , classificationId text  NULL , distance text  NULL , lightConditions text  NULL , numberOfEntries smallint  NULL , numberOfStarts smallint  NULL , startDate date  NULL );
+  CREATE TABLE entryfees (id bigint  NOT NULL PRIMARY KEY, created_at timestamp with time zone now() NOT NULL , eventId text  NULL , entryFeeId text  NOT NULL , name text  NULL , amount smallint  NULL , type text  NULL , valueOperator text  NULL , order text  NULL , classType text  NULL );
 
-  CREATE TABLE organisations (id bigint  NOT NULL PRIMARY KEY, created_at timestamp with time zone now() NOT NULL , organisationId smallint  NULL , name text  NULL , countryName text  NULL , parentOrganisationId smallint  NULL );
+  CREATE TABLE events (id bigint  NOT NULL PRIMARY KEY, created_at timestamp with time zone now() NOT NULL , eventId text  NULL , name text  NULL , disciplineId text  NULL , classificationId text  NULL , distance text  NULL , lightConditions text  NULL , numberOfEntries smallint  NULL , numberOfStarts smallint  NULL , startDate date  NULL , location json  NULL , punchingUnitType text  NULL , organiserId text[]  NULL );
+
+  CREATE TABLE organisations (id bigint  NOT NULL PRIMARY KEY, created_at timestamp with time zone now() NOT NULL , organisationId text  NULL , name text  NULL , countryName text  NULL , parentOrganisationId text  NULL , type text  NULL );
 
   CREATE TABLE results (id bigint  NOT NULL PRIMARY KEY, classId text  NULL , eventId text  NULL , personId text  NULL , name text  NULL , date date  NULL , resultId text  NULL );
 
-  CREATE TABLE runners (id bigint  NOT NULL PRIMARY KEY, personId text  NULL , gender text  NULL , fullName text  NULL , birthDate date  NULL , nationality text  NULL , organisationId smallint  NULL );
+  CREATE TABLE runners (id bigint  NOT NULL PRIMARY KEY, personId text  NULL , gender text  NULL , fullName text  NULL , birthDate date  NULL , nationality text  NULL , organisationId text  NULL );
 ```
 
 You'll also need to add the following configs to the `.env` file.
