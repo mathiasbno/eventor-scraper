@@ -3,8 +3,6 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 
-import { fetchEventsAndInsert, fetchAndInsertOrgs } from "../src/process.js";
-
 dotenv.config();
 
 export const eventorApi = new EventorApi({
@@ -29,6 +27,9 @@ app.get("/api/cron", async (req, res) => {
   }
 
   try {
+    const { fetchEventsAndInsert, fetchAndInsertOrgs } = await import(
+      "../src/process.js"
+    );
     const startDate = new Date();
     const endDate = new Date();
     endDate.setDate(endDate.getDate() - 7);
