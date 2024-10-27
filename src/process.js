@@ -15,6 +15,11 @@ const supabase = createClient(
   process.env.SUPABASE_PUBLIC_ANON_KEY
 );
 
+const { data, error } = await supabase.auth.signInWithPassword({
+  email: process.env.SUPABASE_USER,
+  password: process.env.SUPABASE_PASSWORD,
+});
+
 const blackListedOrganisations = ["3591"];
 
 const nukeDate = async () => {
