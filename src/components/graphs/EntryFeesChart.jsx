@@ -13,23 +13,27 @@ export function EntryFeesChart(props) {
   const [classification, setClassification] = useState("3");
   const [classtype, setClasstype] = useState("normal");
   const [period, setPeriod] = useState([]);
+  const [error, setError] = useState(null);
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    const { data, error } = await supabase.rpc("get_entry_fees", {
+      organisation_ids: filter.organisations,
+      discipline_list: filter.disciplines,
+    });
+
+    if (error) {
+      console.error("Error fetching data:", error);
+      setError(error.message);
+      setLoading(false);
+    } else {
+      setData(data);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setLoading(true);
-    const fetchData = async () => {
-      const { data, error } = await supabase.rpc("get_entry_fees", {
-        organisation_ids: filter.organisations,
-        discipline_list: filter.disciplines,
-      });
-
-      if (error) {
-        console.error("Error fetching data:", error);
-      } else {
-        setData(data);
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, [filter]);
 
@@ -117,7 +121,15 @@ export function EntryFeesChart(props) {
       </div>
 
       <div className="flex justify-center items-center h-80">
-        {!loading ? (
+        {loading ? (
+          <Spinner />
+        ) : error ? (
+          <div className="flex flex-col items-center">
+            <Button onClick={fetchData} className="mt-2">
+              Last inn på nytt
+            </Button>
+          </div>
+        ) : (
           <BarChart
             className="h-80"
             data={transformedData}
@@ -136,8 +148,6 @@ export function EntryFeesChart(props) {
             yAxisWidth={60}
             onValueChange={(v) => console.log(v)}
           />
-        ) : (
-          <Spinner />
         )}
       </div>
       <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">

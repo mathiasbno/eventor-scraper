@@ -7,24 +7,28 @@ import { supabase } from "../../supabaseClient";
 export function DistrictsLeaderboard(props) {
   const { filter } = props;
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [data, setData] = useState([]);
 
-  useEffect(() => {
+  const fetchData = async () => {
     setLoading(true);
-    const fetchData = async () => {
-      const { data, error } = await supabase.rpc("get_disctrict_starts", {
-        year_param: new Date().getFullYear(),
-        discipline_list: filter.disciplines,
-      });
+    setError(null);
+    const { data, error } = await supabase.rpc("get_disctrict_starts", {
+      year_param: new Date().getFullYear(),
+      discipline_list: filter.disciplines,
+    });
 
-      if (error) {
-        console.error("Error fetching data:", error);
-      } else {
-        setData(data);
-        setLoading(false);
-      }
-    };
+    if (error) {
+      console.error("Error fetching data:", error);
+      setError(error.message);
+      setLoading(false);
+    } else {
+      setData(data);
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, [filter]);
 
@@ -33,7 +37,15 @@ export function DistrictsLeaderboard(props) {
       <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong mb-5 font-medium">
         Kretser med flest starter i {new Date().getFullYear()}
       </h3>
-      {!loading ? (
+      {loading ? (
+        <Spinner />
+      ) : error ? (
+        <div className="flex flex-col items-center">
+          <Button onClick={fetchData} className="mt-2">
+            Last inn på nytt
+          </Button>
+        </div>
+      ) : (
         <List>
           {data.map((item, index) => (
             <ListItem key={`district-${index}`}>
@@ -46,8 +58,6 @@ export function DistrictsLeaderboard(props) {
             </ListItem>
           ))}
         </List>
-      ) : (
-        <Spinner />
       )}
       <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">
         Antall starter registrert på løpere registrert i klubben som tilhører

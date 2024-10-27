@@ -8,27 +8,31 @@ export function EventsByClubsLeaderboard(props) {
   const { filter } = props;
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [data, setData] = useState([]);
 
-  useEffect(() => {
+  const fetchData = async () => {
     setLoading(true);
-    const fetchData = async () => {
-      const { data, error } = await supabase
-        .rpc("get_events_by_organisation_year", {
-          year_param: new Date().getFullYear(),
-          organisation_ids: filter.organisations,
-          discipline_list: filter.disciplines,
-        })
-        .limit(10);
+    setError(null);
+    const { data, error } = await supabase
+      .rpc("get_events_by_organisation_year", {
+        year_param: new Date().getFullYear(),
+        organisation_ids: filter.organisations,
+        discipline_list: filter.disciplines,
+      })
+      .limit(10);
 
-      if (error) {
-        console.error("Error fetching data:", error);
-      } else {
-        setData(data);
-        setLoading(false);
-      }
-    };
+    if (error) {
+      console.error("Error fetching data:", error);
+      setError(error.message);
+      setLoading(false);
+    } else {
+      setData(data);
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, [filter]);
 
@@ -37,7 +41,15 @@ export function EventsByClubsLeaderboard(props) {
       <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mb-5">
         Klubber med flest deltagere på sine løp i {new Date().getFullYear()}
       </h3>
-      {!loading ? (
+      {loading ? (
+        <Spinner />
+      ) : error ? (
+        <div className="flex flex-col items-center">
+          <Button onClick={fetchData} className="mt-2">
+            Last inn på nytt
+          </Button>
+        </div>
+      ) : (
         <List>
           {data.map((item, index) => (
             <ListItem key={`club-${index}`}>
@@ -50,8 +62,6 @@ export function EventsByClubsLeaderboard(props) {
             </ListItem>
           ))}
         </List>
-      ) : (
-        <Spinner />
       )}
       <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">
         Antall starter registrert på løp arrangert av klubben. I løp med flere

@@ -11,28 +11,32 @@ export function EventsCategoryChart(props) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
   const [granularity, setGranularity] = useState("year");
+  const [error, setError] = useState(null);
   const [dataPoint, setDataPoint] = useState("total_starts");
 
-  useEffect(() => {
+  const fetchData = async () => {
     setLoading(true);
-    const fetchData = async () => {
-      const { data, error } = await supabase.rpc(
-        "get_events_by_classification_granularity",
-        {
-          granularity,
-          organisation_ids: filter.organisations,
-          discipline_list: filter.disciplines,
-        }
-      );
-
-      if (error) {
-        console.error("Error fetching data:", error);
-      } else {
-        setData(data);
-        setLoading(false);
+    setError(null);
+    const { data, error } = await supabase.rpc(
+      "get_events_by_classification_granularity",
+      {
+        granularity,
+        organisation_ids: filter.organisations,
+        discipline_list: filter.disciplines,
       }
-    };
+    );
 
+    if (error) {
+      console.error("Error fetching data:", error);
+      setError(error.message);
+      setLoading(false);
+    } else {
+      setData(data);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, [granularity, filter]);
 
@@ -78,7 +82,15 @@ export function EventsCategoryChart(props) {
       </div>
 
       <div className="flex justify-center items-center h-80">
-        {!loading ? (
+        {loading ? (
+          <Spinner />
+        ) : error ? (
+          <div className="flex flex-col items-center">
+            <Button onClick={fetchData} className="mt-2">
+              Last inn på nytt
+            </Button>
+          </div>
+        ) : (
           <LineChart
             className="h-80"
             data={chartData}
@@ -94,8 +106,6 @@ export function EventsCategoryChart(props) {
             yAxisWidth={60}
             onValueChange={(v) => console.log(v)}
           />
-        ) : (
-          <Spinner />
         )}
       </div>
       <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">

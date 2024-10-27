@@ -36,6 +36,7 @@ export function AgeChartCohort(props) {
   const [birthYearCategories, setBirthYearCategories] = useState([]);
   const [accumulate, setAccumulate] = useState(false);
   const [localFilter, setLocalFilter] = useState(defaultFilter);
+  const [error, setError] = useState(null);
 
   const formatDataForChart = (data) => {
     // Extract all unique birth years to use as categories for the chart
@@ -79,35 +80,38 @@ export function AgeChartCohort(props) {
     }, []);
   };
 
-  useEffect(() => {
+  const fetchData = async () => {
     setLoading(true);
-    const fetchData = async () => {
-      const { data, error } = await supabase.rpc(
-        "get_participation_by_birth_year_cohort",
-        {
-          organisation_ids: filter.organisations,
-          discipline_list: filter.disciplines,
-        }
-      );
-
-      if (error) {
-        console.error("Error fetching data:", error);
-      } else {
-        // Transform the data to use human-readable labels
-        setDataOrigin(
-          data
-            .filter(
-              (item) =>
-                item.birth_year !== null &&
-                item.birth_year > 1920 &&
-                item.birth_year < new Date().getFullYear() - 9
-            )
-            .sort((a, b) => a.event_year - b.event_year)
-        );
-        setLoading(false);
+    setError(null);
+    const { data, error } = await supabase.rpc(
+      "get_participation_by_birth_year_cohort",
+      {
+        organisation_ids: filter.organisations,
+        discipline_list: filter.disciplines,
       }
-    };
+    );
 
+    if (error) {
+      console.error("Error fetching data:", error);
+      setError(error.message);
+      setLoading(false);
+    } else {
+      // Transform the data to use human-readable labels
+      setDataOrigin(
+        data
+          .filter(
+            (item) =>
+              item.birth_year !== null &&
+              item.birth_year > 1920 &&
+              item.birth_year < new Date().getFullYear() - 9
+          )
+          .sort((a, b) => a.event_year - b.event_year)
+      );
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, [filter]);
 
@@ -162,7 +166,15 @@ export function AgeChartCohort(props) {
       </div>
 
       <div className="flex justify-center items-center h-90">
-        {!loading ? (
+        {loading ? (
+          <Spinner />
+        ) : error ? (
+          <div className="flex flex-col items-center">
+            <Button onClick={fetchData} className="mt-2">
+              Last inn på nytt
+            </Button>
+          </div>
+        ) : (
           <LineChart
             className="h-96"
             data={data}
@@ -189,8 +201,6 @@ export function AgeChartCohort(props) {
             yAxisWidth={60}
             onValueChange={(v) => console.log(v)}
           />
-        ) : (
-          <Spinner />
         )}
       </div>
       <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">

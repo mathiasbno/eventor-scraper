@@ -7,25 +7,32 @@ import { supabase } from "../../supabaseClient";
 export function BirthYearLeaderboard() {
   const [birthYear, setBirthYear] = useState(1990);
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    setData([]);
+    const { data, error } = await supabase
+      .rpc("get_runners_for_year", {
+        birth_year: birthYear,
+        organisation_id: null,
+        year: new Date().getFullYear(),
+      })
+      .limit(10);
+
+    if (error) {
+      console.error("Error fetching data:", error);
+      setError(error.message);
+      setLoading(false);
+    } else {
+      setData(data);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    setData([]);
-    const fetchData = async () => {
-      const { data, error } = await supabase
-        .rpc("get_runners_for_year", {
-          birth_year: birthYear,
-          organisation_id: null,
-          year: new Date().getFullYear(),
-        })
-        .limit(10);
-
-      if (error) {
-        console.error("Error fetching data:", error);
-      } else {
-        setData(data);
-      }
-    };
-
     fetchData();
   }, [birthYear]);
 
@@ -41,7 +48,15 @@ export function BirthYearLeaderboard() {
           className="mx-auto w-20"
         />
       </div>
-      {data.length ? (
+      {loading ? (
+        <Spinner />
+      ) : error ? (
+        <div className="flex flex-col items-center">
+          <Button onClick={fetchData} className="mt-2">
+            Last inn på nytt
+          </Button>
+        </div>
+      ) : (
         <List>
           {data.map((item) => (
             <ListItem>
@@ -55,8 +70,6 @@ export function BirthYearLeaderboard() {
             </ListItem>
           ))}
         </List>
-      ) : (
-        <Spinner />
       )}
     </Card>
   );

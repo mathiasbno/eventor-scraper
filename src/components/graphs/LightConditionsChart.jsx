@@ -36,6 +36,7 @@ export function LightConditionsChart(props) {
 
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
+  const [error, setError] = useState(null);
   const [selectedLightConditions, setSelectedLightConditions] = useState([
     "Night",
     "DayAndNight",
@@ -43,31 +44,31 @@ export function LightConditionsChart(props) {
   ]);
   const [dataPoint, setDataPoint] = useState("events");
 
-  useEffect(() => {
+  const fetchData = async () => {
     setLoading(true);
-    const fetchData = async () => {
-      const { data, error } = await supabase.rpc(
-        "get_events_by_lightcondition",
-        {
-          granularity: "year",
-          organisation_ids: filter.organisations,
-          discipline_list: filter.disciplines,
-        }
+    setError(null);
+    const { data, error } = await supabase.rpc("get_events_by_lightcondition", {
+      granularity: "year",
+      organisation_ids: filter.organisations,
+      discipline_list: filter.disciplines,
+    });
+
+    if (error) {
+      console.error("Error fetching data:", error);
+      setError(error.message);
+      setLoading(false);
+    } else {
+      setData(
+        data.map((item) => ({
+          ...item,
+          lightconditions: item.lightconditions || "Day",
+        }))
       );
+      setLoading(false);
+    }
+  };
 
-      if (error) {
-        console.error("Error fetching data:", error);
-      } else {
-        setData(
-          data.map((item) => ({
-            ...item,
-            lightconditions: item.lightconditions || "Day",
-          }))
-        );
-        setLoading(false);
-      }
-    };
-
+  useEffect(() => {
     fetchData();
   }, [filter]);
 
@@ -129,7 +130,15 @@ export function LightConditionsChart(props) {
       </div>
 
       <div className="flex justify-center items-center h-80">
-        {!loading ? (
+        {loading ? (
+          <Spinner />
+        ) : error ? (
+          <div className="flex flex-col items-center">
+            <Button onClick={fetchData} className="mt-2">
+              Last inn på nytt
+            </Button>
+          </div>
+        ) : (
           <LineChart
             className="h-80"
             data={chartData.map((item) => ({
@@ -155,8 +164,6 @@ export function LightConditionsChart(props) {
             yAxisWidth={60}
             onValueChange={(v) => console.log(v)}
           />
-        ) : (
-          <Spinner />
         )}
       </div>
       <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">

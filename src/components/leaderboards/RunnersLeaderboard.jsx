@@ -6,22 +6,29 @@ import { supabase } from "../../supabaseClient";
 
 export function RunnersLeaderboard() {
   const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    const { data, error } = await supabase
+      .rpc("get_runners_for_year", {
+        year_param: new Date().getFullYear(),
+      })
+      .limit(10);
+
+    if (error) {
+      console.error("Error fetching data:", error);
+      setError(error.message);
+      setLoading(false);
+    } else {
+      setData(data);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      const { data, error } = await supabase
-        .rpc("get_runners_for_year", {
-          year_param: new Date().getFullYear(),
-        })
-        .limit(10);
-
-      if (error) {
-        console.error("Error fetching data:", error);
-      } else {
-        setData(data);
-      }
-    };
-
     fetchData();
   }, []);
 
@@ -30,7 +37,15 @@ export function RunnersLeaderboard() {
       <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mb-5">
         Løpere med flest starter i {new Date().getFullYear()}
       </h3>
-      {data.length ? (
+      {loading ? (
+        <Spinner />
+      ) : error ? (
+        <div className="flex flex-col items-center">
+          <Button onClick={fetchData} className="mt-2">
+            Last inn på nytt
+          </Button>
+        </div>
+      ) : (
         <List>
           {data.map((item) => (
             <ListItem>
@@ -44,8 +59,6 @@ export function RunnersLeaderboard() {
             </ListItem>
           ))}
         </List>
-      ) : (
-        <Spinner />
       )}
     </Card>
   );

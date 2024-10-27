@@ -11,6 +11,7 @@ export function AgeChart(props) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
   const [localFilter, setLocalFilter] = useState(["2024", "2019"]);
+  const [error, setError] = useState(null);
   const [selectedCategories, setSelectedCategories] = useState([
     "total_starts_under_9",
     "total_starts_9_10",
@@ -49,33 +50,36 @@ export function AgeChart(props) {
     total_starts_veteran: "Veteran",
   };
 
-  useEffect(() => {
+  const fetchData = async () => {
     setLoading(true);
-    const fetchData = async () => {
-      const { data, error } = await supabase.rpc("get_starts_by_age_group", {
-        organisation_ids: filter.organisations,
-        discipline_list: filter.disciplines,
-      });
+    setError(null);
+    const { data, error } = await supabase.rpc("get_starts_by_age_group", {
+      organisation_ids: filter.organisations,
+      discipline_list: filter.disciplines,
+    });
 
-      if (error) {
-        console.error("Error fetching data:", error);
-      } else {
-        // Transform the data to use human-readable labels
-        const transformedData = data.map((item) => {
-          const newItem = { ...item };
-          Object.keys(categoryLabels).forEach((key) => {
-            if (newItem[key] !== undefined) {
-              newItem[categoryLabels[key]] = newItem[key];
-              delete newItem[key];
-            }
-          });
-          return newItem;
+    if (error) {
+      console.error("Error fetching data:", error);
+      setError(error.message);
+      setLoading(false);
+    } else {
+      // Transform the data to use human-readable labels
+      const transformedData = data.map((item) => {
+        const newItem = { ...item };
+        Object.keys(categoryLabels).forEach((key) => {
+          if (newItem[key] !== undefined) {
+            newItem[categoryLabels[key]] = newItem[key];
+            delete newItem[key];
+          }
         });
-        setData(transformedData);
-        setLoading(false);
-      }
-    };
+        return newItem;
+      });
+      setData(transformedData);
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, [filter]);
 
@@ -121,7 +125,15 @@ export function AgeChart(props) {
       </div>
 
       <div className="flex justify-center items-center h-90">
-        {!loading ? (
+        {loading ? (
+          <Spinner />
+        ) : error ? (
+          <div className="flex flex-col items-center">
+            <Button onClick={fetchData} className="mt-2">
+              Last inn på nytt
+            </Button>
+          </div>
+        ) : (
           <LineChart
             className="h-80"
             data={data.filter((item) =>
@@ -148,8 +160,6 @@ export function AgeChart(props) {
             yAxisWidth={60}
             onValueChange={(v) => console.log(v)}
           />
-        ) : (
-          <Spinner />
         )}
       </div>
       <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">
