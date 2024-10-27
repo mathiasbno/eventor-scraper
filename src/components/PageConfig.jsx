@@ -120,7 +120,7 @@ export function PageConfig(props) {
                       value={item.organisationId}
                       key={`organisation-${item.organisationId}`}
                     >
-                      {item.organisationName}
+                      {item.name}
                     </MultiSelectItem>
                   ))}
                 </MultiSelect>
