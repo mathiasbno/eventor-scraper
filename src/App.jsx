@@ -24,7 +24,7 @@ import { EventSearch } from "./components/leaderboards/EventSearch";
 import { DistanceChart } from "./components/graphs/DistanceChart";
 import { LightConditionsChart } from "./components/graphs/LightConditionsChart";
 import { EntryFeesChart } from "./components/graphs/EntryFeesChart";
-import { MaintenanceMode } from "./components/MaintenanceMode";
+import { EventsMap } from "./components/EventsMap";
 
 function App() {
   const [filter, setFilter] = useState(null);
@@ -63,9 +63,7 @@ function App() {
             <EventsByClubsLeaderboard filter={filter} />
             <DistrictsLeaderboard filter={filter} />
             <EventSearch filter={filter} />
-            {/* <Divider className="col-span-4">
-        <h2 className="text-tremor-content-strong text-2xl">Search</h2>
-        </Divider> */}
+            <EventsMap filter={filter} />
           </>
         ) : null}
         <Disclaimer />
