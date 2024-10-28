@@ -1,6 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Card, Select, SelectItem, Switch } from "@tremor/react";
-import { Circle, MapContainer, Popup, TileLayer, useMap } from "react-leaflet";
+import {
+  Circle,
+  CircleMarker,
+  MapContainer,
+  Popup,
+  TileLayer,
+  useMap,
+} from "react-leaflet";
 
 import "leaflet/dist/leaflet.css";
 import { supabase } from "../supabaseClient";
@@ -94,6 +101,8 @@ export function EventsMap(props) {
     return radiusB - radiusA;
   });
 
+  const Markeromponent = toggleSizeScale ? Circle : CircleMarker;
+
   return (
     <Card className="col-span-4 h-[64rem]">
       <div className="flex justify-between items-start flex-col mb-2 gap-2">
@@ -101,13 +110,19 @@ export function EventsMap(props) {
           Løpsoversikt
         </h3>
 
+        <p className="text-tremor-content text-xs dark:text-dark-tremor-content">
+          Viser alle løp for valgt periode. Klikk på antall starter under for å
+          vise sirklene i relativ størrelse uut i fra antall starter. Klikk på
+          hver markør for å se detaljer inkludert link til Eventor.
+        </p>
+
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex flex-row gap-3">
             <label
               htmlFor="switch"
               className="text-tremor-default text-tremor-content dark:text-dark-tremor-content"
             >
-              Vis antall startende
+              Antall startende
             </label>
             <Switch
               id="switch"
@@ -144,7 +159,7 @@ export function EventsMap(props) {
         center={defaultPosition}
         zoom={5}
         scrollWheelZoom={false}
-        style={{ height: "90%" }}
+        style={{ height: "89%" }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -153,10 +168,10 @@ export function EventsMap(props) {
 
         {!loading && !error
           ? sortedChartData.map((item, index) => (
-              <Circle
+              <Markeromponent
                 key={index}
                 center={item.position}
-                radius={toggleSizeScale ? getRadius(item.numberOfStarts) : 100}
+                radius={toggleSizeScale ? getRadius(item.numberOfStarts) : 4}
                 color="blue"
                 fillColor="blue"
                 fillOpacity={toggleSizeScale ? 0.2 : 0.5}
@@ -174,10 +189,9 @@ export function EventsMap(props) {
                     <span>{item.startDate}</span>
                   </div>
                 </Popup>
-              </Circle>
+              </Markeromponent>
             ))
           : null}
-        {/* <MapBounds data={chartData} /> */}
       </MapContainer>
     </Card>
   );
