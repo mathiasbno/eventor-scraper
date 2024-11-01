@@ -1,4 +1,4 @@
-import { Card, LineChart, Select, SelectItem } from "@tremor/react";
+import { Button, Card, LineChart, Select, SelectItem } from "@tremor/react";
 import { useEffect, useState } from "react";
 
 import { supabase } from "../../supabaseClient";

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Card, Select, SelectItem, Switch } from "@tremor/react";
+import { Button, Card, Select, SelectItem, Switch } from "@tremor/react";
 import {
   Circle,
   CircleMarker,
@@ -78,19 +78,25 @@ export function EventsMap(props) {
     period ? item.year === period : true
   );
 
+  const maxValCutoff = 3000;
+
   const minVal = Math.min(
     ...chartData.map((item) => item.numberOfStarts).filter((item) => item > 0)
   );
-  const maxVal = Math.max(...chartData.map((item) => item.numberOfStarts));
+  const maxVal = Math.min(
+    maxValCutoff,
+    Math.max(...chartData.map((item) => item.numberOfStarts))
+  );
 
   const getRadius = (value) => {
-    const minRadius = 50; // Minimum radius in meters
+    const minRadius = 100; // Minimum radius in meters
     const maxRadius = 3000; // Maximum radius in meters
     if (minVal === maxVal) {
       return minRadius; // Avoid division by zero if all values are the same
     }
     return (
-      ((value - minVal) / (maxVal - minVal)) * (maxRadius - minRadius) +
+      ((Math.min(maxValCutoff, value) - minVal) / (maxVal - minVal)) *
+        (maxRadius - minRadius) +
       minRadius
     );
   };
@@ -174,7 +180,7 @@ export function EventsMap(props) {
                 radius={toggleSizeScale ? getRadius(item.numberOfStarts) : 4}
                 color="blue"
                 fillColor="blue"
-                fillOpacity={toggleSizeScale ? 0.2 : 0.5}
+                fillOpacity={toggleSizeScale ? 0.3 : 0.5}
                 stroke={false}
               >
                 <Popup>

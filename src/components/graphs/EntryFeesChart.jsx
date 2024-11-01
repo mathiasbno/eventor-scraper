@@ -1,4 +1,11 @@
-import { BarChart, Card, MultiSelect, Select, SelectItem } from "@tremor/react";
+import {
+  BarChart,
+  Button,
+  Card,
+  MultiSelect,
+  Select,
+  SelectItem,
+} from "@tremor/react";
 import { useEffect, useState } from "react";
 
 import { supabase } from "../../supabaseClient";
