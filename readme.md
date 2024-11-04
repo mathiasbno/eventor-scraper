@@ -80,35 +80,18 @@ Run process to fetch data:
   npm run process
 ```
 
+## Database
+
 For simplicities sake we store the data in a postgresql database using the cloud service (Supabase)[https://supabase.com/]. To be able to store the data to the production database you'll have to get the correct env variables from me.
 
-If you whish to experiment for yourself on the side you can recreate the database in Supabase for yourself using the following commands. _(This might change over time as development moves forward)_
+Information about migration and local development is under construction.
 
-```sql
-  CREATE TABLE classes (id bigint  NOT NULL PRIMARY KEY, created_at timestamp with time zone now() NOT NULL , classId text  NULL , eventId text  NULL , name text  NULL , shortName text  NULL , lowAge smallint  NULL , highAge smallint  NULL , sex character varying  NULL , type text  NULL );
+You can follow the steps in the (Supabase CLI setup)[https://supabase.com/docs/guides/local-development/cli/getting-started] to get started with your local development with supabse.
 
-  CREATE TABLE classifications (id bigint  NOT NULL PRIMARY KEY, classificationId text  NULL , classificationName text  NULL );
+The migration files are included to mirror the environment localy. So after setting up the CLI you can run the following command to configure your databse:
 
-  CREATE TABLE discipline (id bigint  NOT NULL PRIMARY KEY, disciplineId text  NULL , name text  NULL );
-
-  CREATE TABLE entries (id bigint  NOT NULL PRIMARY KEY, classId text  NULL , eventId text  NULL , personId text  NULL , date date  NULL , entryId text  NULL );
-
-  CREATE TABLE entryfees (id bigint  NOT NULL PRIMARY KEY, created_at timestamp with time zone now() NOT NULL , eventId text  NULL , entryFeeId text  NOT NULL , name text  NULL , amount smallint  NULL , type text  NULL , valueOperator text  NULL , order text  NULL , classType text  NULL );
-
-  CREATE TABLE events (id bigint  NOT NULL PRIMARY KEY, created_at timestamp with time zone now() NOT NULL , eventId text  NULL , name text  NULL , disciplineId text  NULL , classificationId text  NULL , distance text  NULL , lightConditions text  NULL , numberOfEntries smallint  NULL , numberOfStarts smallint  NULL , startDate date  NULL , location json  NULL , punchingUnitType text  NULL , organiserId text[]  NULL );
-
-  CREATE TABLE organisations (id bigint  NOT NULL PRIMARY KEY, created_at timestamp with time zone now() NOT NULL , organisationId text  NULL , name text  NULL , countryName text  NULL , parentOrganisationId text  NULL , type text  NULL );
-
-  CREATE TABLE results (id bigint  NOT NULL PRIMARY KEY, classId text  NULL , eventId text  NULL , personId text  NULL , name text  NULL , date date  NULL , resultId text  NULL );
-
-  CREATE TABLE runners (id bigint  NOT NULL PRIMARY KEY, personId text  NULL , gender text  NULL , fullName text  NULL , birthDate date  NULL , nationality text  NULL , organisationId text  NULL );
-```
-
-You'll also need to add the following configs to the `.env` file.
-
-```.env
-SUPABASE_URL<path-to-supabase-database>
-SUPABASE_PUBLIC_ANON_KEY=<your-supabase-anon-key
+```bash
+supabase migration up
 ```
 
 ## Contributing
