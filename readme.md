@@ -9,15 +9,15 @@ This project is a web application for scraping data from Eventor and displaying 
 1. Clone the repository:
 
 ```bash
-  $ git clone git@github.com:mathiasbno/eventor-scraper.git
-  $ cd eventor-scraper
+$ git clone git@github.com:mathiasbno/eventor-scraper.git
+$ cd eventor-scraper
 
 ```
 
 2. Install dependencies:
 
 ```bash
-  $ npm install
+$ npm install
 ```
 
 3. Add env file:
@@ -38,7 +38,7 @@ This env file represents your local development environment.
 To run the local development server:
 
 ```bash
-  $ npm run dev
+$ npm run dev
 ```
 
 ### Production
@@ -84,7 +84,7 @@ VITE_SUPABASE_PUBLIC_ANON_KEY=<your-public-anon-key>
 To fetch data we first need to run the local server like so:
 
 ```bash
-  $ npm run server
+$ npm run server
 ```
 
 _Make sure to have the right path to the server configured in the `.env` file as specified above_
@@ -108,7 +108,7 @@ _Note that Eventor can be a bit slow during the day when in seasson, so you migh
 Run process to fetch data:
 
 ```bash
-  $ npm run process
+$ npm run process
 ```
 
 After processing we end up with a lot of duplicate runners, to mitegate this we have two functions to process and remove them. This does not cover all cases but gets rid of many with slightly different names due to typos and other smaller mistakes.
