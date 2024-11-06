@@ -22,4 +22,6 @@ export default {
       },
     }),
   ],
+  envDir: "../", // Even if the config is in root the env variables are loaded relative to the root
+  // propertie further up. So to access the .env file in root we actually have to go back one level
 };

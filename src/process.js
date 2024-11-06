@@ -9,16 +9,10 @@ import {
 
 dotenv.config();
 
-// Create a single supabase client for interacting with your database
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_PUBLIC_ANON_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY // Use service role key to avoid explicit auth
 );
-
-const { data, error } = await supabase.auth.signInWithPassword({
-  email: process.env.SUPABASE_USER,
-  password: process.env.SUPABASE_PASSWORD,
-});
 
 const blackListedOrganisations = ["3591"];
 
@@ -419,7 +413,7 @@ export const fetchEventsAndInsert = async (
 };
 
 // Get the last 7 days of events
-const startDate = new Date("2024-10-01");
+const startDate = new Date("2024-01-01");
 const endDate = new Date();
 // const startDate = new Date().setDate(new Date().getDate() - 7);
 // const endDate = new Date();
@@ -428,13 +422,13 @@ const granularity = 30; // some times the database times out with larger granula
 const dryrun = false; // set to true if you just want the fetch data and not insert it into the database
 
 // await fetchAndInsertOrgs();
-// await fetchEventsAndInsert(startDate, endDate, granularity, dryrun);
+await fetchEventsAndInsert(startDate, endDate, granularity, dryrun);
 
 // await mergeDuplicateRunners(1, 2020, 2024);
 // await mergeDuplicateRunners(2, 2020, 2024);
 // await removeRunnersWithoutResult();
 
-// const event = await fetchEvent(1351);
+// const event = await fetchEvent(18802);
 // let formattedEvents = formatEvents([event]);
 // console.log(
 //   //   formattedEvents[0].results.map((item) => ({
