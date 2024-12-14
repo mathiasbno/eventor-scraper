@@ -32,42 +32,44 @@ function App() {
   return (
     <>
       <Analytics />
-      <div className="flex flex-wrap md:grid grid-cols-4 gap-x-4 gap-y-4 p-5 max-w-screen-xl mx-auto">
-        <PageConfig filter={filter} setFilter={setFilter} />
-        {filter ? (
-          <>
-            <StartsInYear filter={filter} />
-            <UniqueRunners filter={filter} />
-            <EventsInYear filter={filter} />
-            <YouthInYear filter={filter} />
-            <Divider className="col-span-4">
-              <h2 className="text-tremor-content-strong text-2xl">
-                Starter pr år
-              </h2>
-            </Divider>
-            <EventsChartCompare filter={filter} />
-            <EventsCategoryChart filter={filter} />
-            <EventsChart filter={filter} />
-            <EventsChartMidWeekVsWeekend filter={filter} />
-            <DistanceChart filter={filter} />
-            <LightConditionsChart filter={filter} />
-            <AgeChartCohort filter={filter} />
-            <AgeChart filter={filter} />
-            <EntryFeesChart filter={filter} />
-            <Divider className="col-span-4">
-              <h2 className="text-tremor-content-strong text-2xl">
-                Topp 10 i {new Date().getFullYear()}
-              </h2>
-            </Divider>
-            <ClubsLeaderboard filter={filter} />
-            <EventsByClubsLeaderboard filter={filter} />
-            <DistrictsLeaderboard filter={filter} />
-            <EventSearch filter={filter} />
-            <EventsMap filter={filter} />
-          </>
-        ) : null}
-        <Disclaimer />
-        <Contribute />
+      <div className="bg-[#f8f8f8] dark:bg-[#0e1423]">
+        <div className="flex flex-wrap md:grid grid-cols-4 gap-x-4 gap-y-4 p-5 max-w-screen-xl mx-auto bg-[#f8f8f8] dark:bg-[#0e1423]">
+          <Contribute />
+          <PageConfig filter={filter} setFilter={setFilter} />
+          {filter ? (
+            <>
+              <StartsInYear filter={filter} />
+              <UniqueRunners filter={filter} />
+              <EventsInYear filter={filter} />
+              <YouthInYear filter={filter} />
+              <Divider className="col-span-4">
+                <h2 className="text-tremor-content-strong text-2xl dark:text-dark-tremor-content-strong">
+                  Starter pr år
+                </h2>
+              </Divider>
+              <EventsChartCompare filter={filter} />
+              <EventsCategoryChart filter={filter} />
+              <EventsChart filter={filter} />
+              <EventsChartMidWeekVsWeekend filter={filter} />
+              <DistanceChart filter={filter} />
+              <LightConditionsChart filter={filter} />
+              <AgeChartCohort filter={filter} />
+              <AgeChart filter={filter} />
+              <EntryFeesChart filter={filter} />
+              <Divider className="col-span-4">
+                <h2 className="text-tremor-content-strong text-2xl dark:text-dark-tremor-content-strong">
+                  Topp 10 i {new Date().getFullYear()}
+                </h2>
+              </Divider>
+              <ClubsLeaderboard filter={filter} />
+              <EventsByClubsLeaderboard filter={filter} />
+              <DistrictsLeaderboard filter={filter} />
+              <EventSearch filter={filter} />
+              <EventsMap filter={filter} />
+            </>
+          ) : null}
+          <Disclaimer />
+        </div>
       </div>
     </>
   );

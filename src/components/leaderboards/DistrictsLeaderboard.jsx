@@ -50,7 +50,7 @@ export function DistrictsLeaderboard(props) {
           {data.map((item, index) => (
             <ListItem key={`district-${index}`}>
               <p>
-                <span className="text-tremor-content-strong font-medium">
+                <span className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">
                   {item.parentorgname}
                 </span>
               </p>

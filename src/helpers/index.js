@@ -295,6 +295,7 @@ export const formatEvents = (events) => {
     }
 
     const disciplineId = ensureArray(item.disciplineId);
+    const eventLocation = ensureArray(item.eventRace)[0]?.eventCenterPosition;
 
     let numberOfEntries =
       item.competiorCount[0]?.numberOfEntries === "0"
@@ -331,7 +332,7 @@ export const formatEvents = (events) => {
         lightConditions: item.eventRace?.raceLightCondition,
         numberOfEntries: numberOfEntries,
         numberOfStarts: numberOfStarts,
-        location: item.eventRace?.eventCenterPosition,
+        location: eventLocation,
         punchingUnitType: item.punchingUnitType?.value,
       },
       classes,

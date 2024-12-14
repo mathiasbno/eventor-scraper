@@ -54,7 +54,7 @@ export function EventsByClubsLeaderboard(props) {
           {data.map((item, index) => (
             <ListItem key={`club-${index}`}>
               <p>
-                <span className="text-tremor-content-strong font-medium">
+                <span className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">
                   {item.organisationName}
                 </span>
               </p>
