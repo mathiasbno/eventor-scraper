@@ -47,9 +47,7 @@ export function YouthInYear(props) {
   }, [minAge, maxAge, filter]);
 
   useEffect(() => {
-    if (data.length > 1) {
-      setDelta((data[0]?.total_starts / data[1]?.total_starts - 1) * 100);
-    }
+    setDelta((data[0]?.total_starts / data[1]?.total_starts - 1) * 100);
   }, [data]);
 
   return (
