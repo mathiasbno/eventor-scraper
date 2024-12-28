@@ -164,7 +164,7 @@ export function EventsMap(props) {
         className="markercluster-map"
         center={defaultPosition}
         zoom={5}
-        scrollWheelZoom={false}
+        scrollWheelZoom={true}
         style={{ height: "89%" }}
       >
         <TileLayer
