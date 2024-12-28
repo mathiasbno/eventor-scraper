@@ -64,7 +64,7 @@ export function EventsChartMidWeekVsWeekend(props) {
             onValueChange={(value) => setDataPoint(value)}
           >
             <SelectItem value="events">Antall løp</SelectItem>
-            <SelectItem value="starts">Starter</SelectItem>
+            <SelectItem value="starts">Antall starter</SelectItem>
           </Select>
           {/* <Select
             className="w-64"
