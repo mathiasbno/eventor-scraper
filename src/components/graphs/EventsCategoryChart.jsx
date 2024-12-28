@@ -67,7 +67,7 @@ export function EventsCategoryChart(props) {
             defaultValue="total_starts"
             onValueChange={(value) => setDataPoint(value)}
           >
-            <SelectItem value="number_of_events">Antal løp</SelectItem>
+            <SelectItem value="number_of_events">Antall løp</SelectItem>
             <SelectItem value="total_starts">Starter</SelectItem>
           </Select>
           {/* <Select
