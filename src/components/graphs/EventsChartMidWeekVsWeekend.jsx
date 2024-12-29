@@ -49,7 +49,7 @@ export function EventsChartMidWeekVsWeekend(props) {
       <div className="flex justify-between items-start md:items-center md:flex-row flex-col mb-2 gap-2">
         <div className="flex flex-col">
           <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium ">
-            Midt-uke vs helge pr {granularityLookup[granularity].toLowerCase()}{" "}
+            Midt-uke vs helger pr {granularityLookup[granularity].toLowerCase()}{" "}
             (kretsløp og nærløp)
           </h3>
           <p className="text-tremor-content dark:text-dark-tremor-content mb-2">
