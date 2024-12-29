@@ -109,9 +109,9 @@ export function EventsChartMidWeekVsWeekend(props) {
           "nb-NO"
         )} sammenlignet med data frem til ${new Date(
           new Date().setFullYear(new Date().getFullYear() - 4)
-        ).toLocaleDateString("nb-NO")})`}
+        ).toLocaleDateString("nb-NO")}).`}
         <br />
-        Data er ikke påvirket av det globale grenvalget
+        Data er ikke påvirket av det globale grenvalget.
       </p>
     </Card>
   );

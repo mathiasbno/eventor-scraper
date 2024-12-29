@@ -141,7 +141,7 @@ export function EventsChartCompare(props) {
         )}
       </div>
       <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">
-        Data for inneværende år viser tall til og med sist uke
+        Data for inneværende år viser tall til og med sist uke.
       </p>
     </Card>
   );
