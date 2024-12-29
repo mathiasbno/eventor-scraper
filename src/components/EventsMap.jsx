@@ -118,7 +118,7 @@ export function EventsMap(props) {
 
         <p className="text-tremor-content text-xs dark:text-dark-tremor-content">
           Viser alle løp for valgt periode. Klikk på antall starter under for å
-          vise sirklene i relativ størrelse uut i fra antall starter. Klikk på
+          vise sirklene i relativ størrelse ut i fra antall starter. Klikk på
           hver markør for å se detaljer inkludert link til Eventor.
         </p>
 
