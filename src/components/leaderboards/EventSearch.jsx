@@ -154,7 +154,7 @@ export function EventSearch(props) {
       <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">
         Antall starter som registrert i Eventor. Om resultater mangler estimerer
         vi antall starter med påmeldingsantallet. Kun resultater registrert i
-        Eventor blir vist, PDF-resultater eller resultater fra andre
+        Eventor blir vist. PDF-resultater og resultater fra andre
         resultatjenester blir ikke registrert.
       </p>
     </Card>
