@@ -135,9 +135,10 @@ export function DistanceChart(props) {
             className="h-80"
             data={chartData.map((item) => ({
               period: item.period,
-              ...selectedDistances
-                .map((distance) => ({ [distance]: item[distance][dataPoint] }))
-                .reduce((acc, cur) => ({ ...acc, ...cur }), {}),
+              ...selectedDistances.reduce((acc, distance) => {
+                acc[distance] = item[distance]?.[dataPoint] ?? 0;
+                return acc;
+              }, {}),
             }))}
             index="period"
             autoMinValue={true}
