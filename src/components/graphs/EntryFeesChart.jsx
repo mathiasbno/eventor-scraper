@@ -104,7 +104,7 @@ export function EntryFeesChart(props) {
 
           <Select
             className="w-full xl:w-64"
-            defaultValue="2024"
+            defaultValue={new Date().getFullYear().toString()}
             onValueChange={(e) => setPeriod(e)}
           >
             {uniquePeriods.map((item) => (
