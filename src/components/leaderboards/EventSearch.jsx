@@ -102,7 +102,7 @@ export function EventSearch(props) {
         >
           <SelectItem value="none">Ingen gruppering</SelectItem>
           <SelectItem value="year">År</SelectItem>
-          <SelectItem value="day">dag</SelectItem>
+          <SelectItem value="day">Dag</SelectItem>
         </Select>
       </div>
 
