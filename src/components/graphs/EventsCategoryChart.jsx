@@ -113,7 +113,7 @@ export function EventsCategoryChart(props) {
           "nb-NO"
         )} sammenlignet med data frem til ${new Date(
           new Date().setFullYear(new Date().getFullYear() - 4)
-        ).toLocaleDateString("nb-NO")})`}
+        ).toLocaleDateString("nb-NO")}).`}
       </p>
     </Card>
   );

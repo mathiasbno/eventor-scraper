@@ -158,7 +158,7 @@ export function EntryFeesChart(props) {
         )}
       </div>
       <p className="text-tremor-content text-xs dark:text-dark-tremor-content mt-5">
-        Data hentet fra løp som har satt opp påmeldingsavgift i Eventor
+        Data hentet fra løp som har satt opp påmeldingsavgift i Eventor.
       </p>
     </Card>
   );

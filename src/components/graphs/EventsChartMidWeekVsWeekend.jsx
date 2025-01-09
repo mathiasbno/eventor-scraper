@@ -49,7 +49,7 @@ export function EventsChartMidWeekVsWeekend(props) {
       <div className="flex justify-between items-start md:items-center md:flex-row flex-col mb-2 gap-2">
         <div className="flex flex-col">
           <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium ">
-            Midt-uke vs helge pr {granularityLookup[granularity].toLowerCase()}{" "}
+            Midt-uke vs helger pr {granularityLookup[granularity].toLowerCase()}{" "}
             (kretsløp og nærløp)
           </h3>
           <p className="text-tremor-content dark:text-dark-tremor-content mb-2">
@@ -109,9 +109,9 @@ export function EventsChartMidWeekVsWeekend(props) {
           "nb-NO"
         )} sammenlignet med data frem til ${new Date(
           new Date().setFullYear(new Date().getFullYear() - 4)
-        ).toLocaleDateString("nb-NO")})`}
+        ).toLocaleDateString("nb-NO")}).`}
         <br />
-        Data er ikke påvirket av det globale grenvalget
+        Data er ikke påvirket av det globale grenvalget.
       </p>
     </Card>
   );
