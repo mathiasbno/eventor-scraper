@@ -1,11 +1,4 @@
-import {
-  BadgeDelta,
-  Card,
-  Metric,
-  NumberInput,
-  Text,
-  Button,
-} from "@tremor/react";
+import { BadgeDelta, Card, Button } from "@tremor/react";
 import { Spinner } from "../Spinner";
 import { useEffect, useState } from "react";
 
@@ -15,7 +8,6 @@ import { monthNames } from "../../helpers/chart";
 export function YouthInYear(props) {
   const { filter } = props;
   const [data, setData] = useState([]);
-  const [delta, setDelta] = useState(null);
   const [minAge, setMinAge] = useState(1);
   const [maxAge, setMaxAge] = useState(16);
   const [loading, setLoading] = useState(false);
@@ -25,6 +17,7 @@ export function YouthInYear(props) {
     setLoading(true);
     setError(null);
     const { data, error } = await supabase.rpc("get_runners_by_age_range", {
+      year_param: filter.year,
       min_age: minAge || null,
       max_age: maxAge || null,
       organisation_ids: filter.organisations,
@@ -46,11 +39,10 @@ export function YouthInYear(props) {
     fetchData();
   }, [minAge, maxAge, filter]);
 
-  useEffect(() => {
-    if (data.length > 1) {
-      setDelta((data[0]?.total_starts / data[1]?.total_starts - 1) * 100);
-    }
-  }, [data]);
+  const curYearData = data.find((d) => d.event_year === filter.year);
+  const prevYearData = data.find((d) => d.event_year === filter.year - 1);
+  const delta =
+    (curYearData?.total_starts / prevYearData?.total_starts - 1) * 100;
 
   return (
     <Card
@@ -60,7 +52,9 @@ export function YouthInYear(props) {
     >
       <div className="flex justify-between items-center mb-2">
         <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-          {`Antall starter i alderen <${maxAge} så langt i ${new Date().getFullYear()}`}
+          {filter.year === new Date().getFullYear()
+            ? `Antall starter i alderen <${maxAge} så langt i ${filter.year}`
+            : `Antall starter i alderen <${maxAge} i ${filter.year}`}
         </p>
       </div>
       {loading ? (
@@ -74,7 +68,7 @@ export function YouthInYear(props) {
       ) : (
         <div className="flex gap-2 items-end">
           <p className="text-3xl text-tremor-content-strong dark:text-dark-tremor-content-strong font-semibold">
-            {data[0]?.total_starts}
+            {curYearData?.total_starts}
           </p>
           {delta ? (
             <BadgeDelta

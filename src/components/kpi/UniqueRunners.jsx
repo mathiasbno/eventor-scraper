@@ -9,7 +9,6 @@ export function UniqueRunners(props) {
   const { filter } = props;
 
   const [data, setData] = useState([]);
-  const [delta, setDelta] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -17,6 +16,7 @@ export function UniqueRunners(props) {
     setLoading(true);
     setError(null);
     const { data, error } = await supabase.rpc("get_unique_runners_by_year", {
+      year_param: filter.year,
       organisation_ids: filter.organisations,
       discipline_list: filter.disciplines,
     });
@@ -36,11 +36,12 @@ export function UniqueRunners(props) {
     fetchData();
   }, [filter]);
 
-  useEffect(() => {
-    setDelta(
-      (data[0]?.total_unique_runners / data[1]?.total_unique_runners - 1) * 100
-    );
-  }, [data]);
+  const curYearData = data.find((d) => d.event_year === filter.year);
+  const prevYearData = data.find((d) => d.event_year === filter.year - 1);
+  const delta =
+    (curYearData?.total_unique_runners / prevYearData?.total_unique_runners -
+      1) *
+    100;
 
   return (
     <Card
@@ -50,7 +51,9 @@ export function UniqueRunners(props) {
     >
       <div className="flex justify-between items-center mb-2">
         <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-          Antall unike løpere så langt i {new Date().getFullYear()}
+          {filter.year === new Date().getFullYear()
+            ? `Antall unike løpere så langt i ${filter.year}`
+            : `Antall unike løpere i ${filter.year}`}
         </p>
       </div>
       {loading ? (
@@ -64,7 +67,7 @@ export function UniqueRunners(props) {
       ) : (
         <div className="flex gap-2 items-end">
           <p className="text-3xl text-tremor-content-strong dark:text-dark-tremor-content-strong font-semibold">
-            {data[0]?.total_unique_runners}
+            {curYearData?.total_unique_runners}
           </p>
           {delta ? (
             <BadgeDelta

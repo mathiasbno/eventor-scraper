@@ -3,13 +3,11 @@ import { Spinner } from "../Spinner";
 import { useEffect, useState } from "react";
 
 import { supabase } from "../../supabaseClient";
-import { monthNames } from "../../helpers/chart";
 
 export function StartsInYear(props) {
   const { filter } = props;
 
   const [data, setData] = useState([]);
-  const [delta, setDelta] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -17,6 +15,7 @@ export function StartsInYear(props) {
     setLoading(true);
     setError(null);
     const { data, error } = await supabase.rpc("get_starts_by_year", {
+      year_param: filter.year,
       organisation_ids: filter.organisations,
       discipline_list: filter.disciplines,
     });
@@ -36,9 +35,10 @@ export function StartsInYear(props) {
     fetchData();
   }, [filter]);
 
-  useEffect(() => {
-    setDelta((data[0]?.total_starts / data[1]?.total_starts - 1) * 100);
-  }, [data]);
+  const curYearData = data.find((d) => d.event_year === filter.year);
+  const prevYearData = data.find((d) => d.event_year === filter.year - 1);
+  const delta =
+    (curYearData?.total_starts / prevYearData?.total_starts - 1) * 100;
 
   return (
     <Card
@@ -48,7 +48,9 @@ export function StartsInYear(props) {
     >
       <div className="flex justify-between items-center mb-2">
         <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-          Antall starter så langt i {new Date().getFullYear()}
+          {filter.year === new Date().getFullYear()
+            ? `Antall starter så langt i ${filter.year}`
+            : `Antall starter i ${filter.year}`}
         </p>
       </div>
       {loading ? (
@@ -62,7 +64,7 @@ export function StartsInYear(props) {
       ) : (
         <div className="flex gap-2 items-end">
           <p className="text-3xl text-tremor-content-strong dark:text-dark-tremor-content-strong font-semibold">
-            {data[0]?.total_starts}
+            {curYearData?.total_starts}
           </p>
           {delta ? (
             <BadgeDelta

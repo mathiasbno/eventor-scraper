@@ -9,7 +9,6 @@ export function EventsInYear(props) {
   const { filter } = props;
 
   const [data, setData] = useState([]);
-  const [delta, setDelta] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -17,6 +16,7 @@ export function EventsInYear(props) {
     setLoading(true);
     setError(null);
     const { data, error } = await supabase.rpc("get_events_count_by_year", {
+      year_param: filter.year,
       organisation_ids: filter.organisations,
       discipline_list: filter.disciplines,
     });
@@ -36,9 +36,10 @@ export function EventsInYear(props) {
     fetchData();
   }, [filter]);
 
-  useEffect(() => {
-    setDelta((data[0]?.total_events / data[1]?.total_events - 1) * 100);
-  }, [data]);
+  const curYearData = data.find((d) => d.event_year === filter.year);
+  const prevYearData = data.find((d) => d.event_year === filter.year - 1);
+  const delta =
+    (curYearData?.total_events / prevYearData?.total_events - 1) * 100;
 
   return (
     <Card
@@ -48,7 +49,9 @@ export function EventsInYear(props) {
     >
       <div className="flex justify-between items-center mb-2">
         <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-          Antall løp så langt i {new Date().getFullYear()}
+          {filter.year === new Date().getFullYear()
+            ? `Antall løp så langt i ${filter.year}`
+            : `Antall løp i ${filter.year}`}
         </p>
       </div>
       {loading ? (
@@ -62,7 +65,7 @@ export function EventsInYear(props) {
       ) : (
         <div className="flex gap-2 items-end">
           <p className="text-3xl text-tremor-content-strong dark:text-dark-tremor-content-strong font-semibold">
-            {data[0]?.total_events}
+            {curYearData?.total_events}
           </p>
           {delta ? (
             <BadgeDelta

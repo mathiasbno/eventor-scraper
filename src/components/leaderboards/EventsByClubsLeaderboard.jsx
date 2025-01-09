@@ -16,7 +16,7 @@ export function EventsByClubsLeaderboard(props) {
     setError(null);
     const { data, error } = await supabase
       .rpc("get_events_by_organisation_year", {
-        year_param: new Date().getFullYear(),
+        year_param: filter.year,
         organisation_ids: filter.organisations,
         discipline_list: filter.disciplines,
       })
@@ -39,7 +39,7 @@ export function EventsByClubsLeaderboard(props) {
   return (
     <Card className="col-span-2" decoration="top" decorationColor="emerald">
       <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mb-5">
-        Klubber med flest deltagere på sine løp i {new Date().getFullYear()}
+        Klubber med flest deltagere på sine løp i {filter.year}
       </h3>
       {loading ? (
         <Spinner />

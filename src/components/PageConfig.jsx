@@ -1,4 +1,11 @@
-import { Button, Card, MultiSelect, MultiSelectItem } from "@tremor/react";
+import {
+  Button,
+  Card,
+  MultiSelect,
+  MultiSelectItem,
+  Select,
+  SelectItem,
+} from "@tremor/react";
 import { useEffect, useState } from "react";
 
 import { supabase } from "../supabaseClient";
@@ -13,6 +20,12 @@ export function PageConfig(props) {
   const [disciplines, setDisciplines] = useState([]);
   const [selectedDisciplines, setSelectedDisciplines] = useState([]);
   const [selectedOrganisations, setSelectedOrganisations] = useState([]);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  const years = [];
+  for (let year = new Date().getFullYear(); year >= 2011; year--) {
+    years.push(year);
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,6 +55,7 @@ export function PageConfig(props) {
         setFilter({
           disciplines: null,
           organisations: null,
+          year: new Date().getFullYear(),
         });
       }
     };
@@ -55,6 +69,7 @@ export function PageConfig(props) {
       organisations: selectedOrganisations.length
         ? selectedOrganisations
         : null,
+      year: selectedYear,
     });
   };
 
@@ -127,6 +142,26 @@ export function PageConfig(props) {
               ) : (
                 <Spinner />
               )}
+            </div>
+            <div className="flex flex-col gap-1">
+              <label
+                htmlFor="year"
+                className="text-tremor-default font-medium text-tremor-content dark:text-dark-tremor-content"
+              >
+                År
+              </label>
+              <Select
+                id="year"
+                className="w-64"
+                onValueChange={(e) => setSelectedYear(e)}
+                value={selectedYear}
+              >
+                {years.map((year) => (
+                  <SelectItem value={year} key={`year-${year}`}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </Select>
             </div>
             <Button
               variant="primary"

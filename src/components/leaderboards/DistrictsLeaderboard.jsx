@@ -13,8 +13,8 @@ export function DistrictsLeaderboard(props) {
   const fetchData = async () => {
     setLoading(true);
     setError(null);
-    const { data, error } = await supabase.rpc("get_disctrict_starts", {
-      year_param: new Date().getFullYear(),
+    const { data, error } = await supabase.rpc("get_district_starts", {
+      year_param: filter.year,
       discipline_list: filter.disciplines,
     });
 
@@ -35,7 +35,7 @@ export function DistrictsLeaderboard(props) {
   return (
     <Card className="col-span-2" decoration="top" decorationColor="emerald">
       <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong mb-5 font-medium">
-        Kretser med flest starter i {new Date().getFullYear()}
+        Kretser med flest starter i {filter.year}
       </h3>
       {loading ? (
         <Spinner />

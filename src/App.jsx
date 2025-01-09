@@ -58,7 +58,7 @@ function App() {
               <EntryFeesChart filter={filter} />
               <Divider className="col-span-4">
                 <h2 className="text-tremor-content-strong text-2xl dark:text-dark-tremor-content-strong">
-                  Topp 10 i {new Date().getFullYear()}
+                  Topp 10 i {filter.year}
                 </h2>
               </Divider>
               <ClubsLeaderboard filter={filter} />
