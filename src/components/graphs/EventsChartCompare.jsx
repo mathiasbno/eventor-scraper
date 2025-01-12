@@ -21,7 +21,7 @@ export function EventsChartCompare(props) {
   const [data, setData] = useState([]);
   const [accumulate, setAccumulate] = useState(true);
   const [error, setError] = useState(null);
-  const [localFilter, setLocalFilter] = useState(["2024", "2019"]);
+  const [localFilter, setLocalFilter] = useState([]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -46,6 +46,8 @@ export function EventsChartCompare(props) {
         return acc;
       }, {});
       setData(groupedData);
+      const availableYears = Object.keys(groupedData).sort((a, b) => b - a);
+      setLocalFilter(availableYears);
       setLoading(false);
     }
   };
@@ -90,7 +92,7 @@ export function EventsChartCompare(props) {
 
           <MultiSelect
             className="w-64"
-            defaultValue={["2024", "2019"]}
+            value={localFilter}
             onValueChange={(e) => setLocalFilter(e)}
           >
             {Object.keys(data)
