@@ -1,9 +1,9 @@
-import { BadgeDelta, Card, Button } from "@tremor/react";
+import { Card, Button } from "@tremor/react";
 import { Spinner } from "../Spinner";
 import { useEffect, useState } from "react";
 
 import { supabase } from "../../supabaseClient";
-import { monthNames } from "../../helpers/chart";
+import { DeltaBadge } from "../DeltaBadge";
 
 export function YouthInYear(props) {
   const { filter } = props;
@@ -70,14 +70,7 @@ export function YouthInYear(props) {
           <p className="text-3xl text-tremor-content-strong dark:text-dark-tremor-content-strong font-semibold">
             {curYearData?.total_starts}
           </p>
-          {delta ? (
-            <BadgeDelta
-              deltaType={delta > 0 ? "moderateIncrease" : "moderateDecrease"}
-              isIncreasePositive={true}
-            >
-              {delta.toFixed(2)}%
-            </BadgeDelta>
-          ) : null}
+          <DeltaBadge delta={delta} />
         </div>
       )}
       {/* <div className="flex justify-items-stretch gap-2 items-start mt-2">
