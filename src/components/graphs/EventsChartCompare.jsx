@@ -4,8 +4,6 @@ import {
   LineChart,
   MultiSelect,
   MultiSelectItem,
-  Select,
-  SelectItem,
   Switch,
 } from "@tremor/react";
 import { useEffect, useState } from "react";
