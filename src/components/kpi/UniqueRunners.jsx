@@ -1,9 +1,9 @@
-import { BadgeDelta, Button, Card } from "@tremor/react";
+import { Button, Card } from "@tremor/react";
 import { Spinner } from "../Spinner";
 import { useEffect, useState } from "react";
 
 import { supabase } from "../../supabaseClient";
-import { monthNames } from "../../helpers/chart";
+import { DeltaBadge } from "../DeltaBadge";
 
 export function UniqueRunners(props) {
   const { filter } = props;
@@ -69,14 +69,7 @@ export function UniqueRunners(props) {
           <p className="text-3xl text-tremor-content-strong dark:text-dark-tremor-content-strong font-semibold">
             {curYearData?.total_unique_runners}
           </p>
-          {delta ? (
-            <BadgeDelta
-              deltaType={delta > 0 ? "moderateIncrease" : "moderateDecrease"}
-              isIncreasePositive={true}
-            >
-              {delta.toFixed(2)}%
-            </BadgeDelta>
-          ) : null}
+          <DeltaBadge delta={delta} />
         </div>
       )}
     </Card>
