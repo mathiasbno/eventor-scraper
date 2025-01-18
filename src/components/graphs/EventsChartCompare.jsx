@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   Button,
   Card,
@@ -6,50 +7,45 @@ import {
   MultiSelectItem,
   Switch,
 } from "@tremor/react";
-import { useEffect, useState } from "react";
-
 import { supabase } from "../../supabaseClient";
 import { Spinner } from "../Spinner";
 import { transformDataForChart, getYearRange } from "../../helpers/chart";
 
-export function EventsChartCompare(props) {
-  const { filter } = props;
-
+export function EventsChartCompare({ filter }) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
   const [accumulate, setAccumulate] = useState(true);
   const [error, setError] = useState(null);
   const [localFilter, setLocalFilter] = useState([]);
 
-  const fetchData = async () => {
-    setLoading(true);
-    setError(null);
-    const { data, error } = await supabase.rpc("get_events_starts", {
-      granularity: "month",
-      organisation_ids: filter.organisations,
-      discipline_list: filter.disciplines,
-    });
-
-    if (error) {
-      console.error("Error fetching data:", error);
-      setError(error.message);
-      setLoading(false);
-    } else {
-      const groupedData = data.reduce((acc, item) => {
-        const year = new Date(item.period).getFullYear();
-        if (!acc[year]) {
-          acc[year] = [];
-        }
-        acc[year].push(item);
-        return acc;
-      }, {});
-      setData(groupedData);
-      setLocalFilter(getYearRange(groupedData).slice(0, 3));
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      const { data, error } = await supabase.rpc("get_events_starts", {
+        granularity: "month",
+        organisation_ids: filter.organisations,
+        discipline_list: filter.disciplines,
+      });
+
+      if (error) {
+        console.error("Error fetching data:", error);
+        setError(error.message);
+      } else {
+        const groupedData = data.reduce((acc, item) => {
+          const year = new Date(item.period).getFullYear();
+          if (!acc[year]) {
+            acc[year] = [];
+          }
+          acc[year].push(item);
+          return acc;
+        }, {});
+        setData(groupedData);
+        setLocalFilter(getYearRange(groupedData).slice(0, 3));
+      }
+      setLoading(false);
+    };
+
     fetchData();
   }, [filter]);
 
@@ -65,7 +61,6 @@ export function EventsChartCompare(props) {
     const sortedValues = selectedValues
       .filter((year) => chartYearLabels.includes(year))
       .sort((a, b) => b - a);
-
     setLocalFilter(sortedValues);
   };
 
@@ -79,7 +74,6 @@ export function EventsChartCompare(props) {
         <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">
           Starter pr år
         </h3>
-
         <div className="flex md:flex-row flex-col items-start justify-between md:items-center gap-3">
           <div className="flex flex-row gap-3">
             <label
@@ -95,7 +89,6 @@ export function EventsChartCompare(props) {
               onChange={setAccumulate}
             />
           </div>
-
           <MultiSelect
             className="w-64"
             value={localFilter}
@@ -109,7 +102,6 @@ export function EventsChartCompare(props) {
           </MultiSelect>
         </div>
       </div>
-
       <div className="flex justify-center items-center h-80">
         {loading ? (
           <Spinner />
