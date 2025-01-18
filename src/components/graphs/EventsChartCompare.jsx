@@ -4,15 +4,13 @@ import {
   LineChart,
   MultiSelect,
   MultiSelectItem,
-  Select,
-  SelectItem,
   Switch,
 } from "@tremor/react";
 import { useEffect, useState } from "react";
 
 import { supabase } from "../../supabaseClient";
 import { Spinner } from "../Spinner";
-import { transformDataForChart } from "../../helpers/chart";
+import { transformDataForChart, getYearRange } from "../../helpers/chart";
 
 export function EventsChartCompare(props) {
   const { filter } = props;
@@ -21,7 +19,7 @@ export function EventsChartCompare(props) {
   const [data, setData] = useState([]);
   const [accumulate, setAccumulate] = useState(true);
   const [error, setError] = useState(null);
-  const [localFilter, setLocalFilter] = useState(["2024", "2019"]);
+  const [localFilter, setLocalFilter] = useState([]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -46,6 +44,7 @@ export function EventsChartCompare(props) {
         return acc;
       }, {});
       setData(groupedData);
+      setLocalFilter(getYearRange(groupedData).slice(0, 3));
       setLoading(false);
     }
   };
@@ -54,12 +53,21 @@ export function EventsChartCompare(props) {
     fetchData();
   }, [filter]);
 
+  const chartYearLabels = Object.keys(data).length ? getYearRange(data) : [];
   const chartData = transformDataForChart(
     data,
     "total_starts",
     localFilter,
     accumulate
   );
+
+  const handleSelectChange = (selectedValues) => {
+    const sortedValues = selectedValues
+      .filter((year) => chartYearLabels.includes(year))
+      .sort((a, b) => b - a);
+
+    setLocalFilter(sortedValues);
+  };
 
   return (
     <Card
@@ -90,16 +98,14 @@ export function EventsChartCompare(props) {
 
           <MultiSelect
             className="w-64"
-            defaultValue={["2024", "2019"]}
-            onValueChange={(e) => setLocalFilter(e)}
+            value={localFilter}
+            onValueChange={handleSelectChange}
           >
-            {Object.keys(data)
-              .sort((a, b) => b - a)
-              .map((year) => (
-                <MultiSelectItem value={year} key={`year-${year}`}>
-                  {year}
-                </MultiSelectItem>
-              ))}
+            {chartYearLabels.map((year) => (
+              <MultiSelectItem value={year} key={`year-${year}`}>
+                {year}
+              </MultiSelectItem>
+            ))}
           </MultiSelect>
         </div>
       </div>
