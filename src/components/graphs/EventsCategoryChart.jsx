@@ -1,53 +1,87 @@
-import { Button, Card, LineChart, Select, SelectItem } from "@tremor/react";
 import { useEffect, useState } from "react";
+import {
+  Button,
+  Card,
+  LineChart,
+  Select,
+  SelectItem,
+  MultiSelect,
+  MultiSelectItem,
+} from "@tremor/react";
 
 import { supabase } from "../../supabaseClient";
 import { Spinner } from "../Spinner";
-import { granularityLookup } from "../../helpers/chart";
+import { granularityLookup, getYearRange } from "../../helpers/chart";
 
-export function EventsCategoryChart(props) {
-  const { filter } = props;
-
+export function EventsCategoryChart({ filter }) {
   const [loading, setLoading] = useState(false);
-  const [data, setData] = useState([]);
+  const [data, setData] = useState({});
   const [granularity, setGranularity] = useState("year");
   const [error, setError] = useState(null);
   const [dataPoint, setDataPoint] = useState("total_starts");
-
-  const fetchData = async () => {
-    setLoading(true);
-    setError(null);
-    const { data, error } = await supabase.rpc(
-      "get_events_by_classification_granularity",
-      {
-        granularity,
-        organisation_ids: filter.organisations,
-        discipline_list: filter.disciplines,
-      }
-    );
-
-    if (error) {
-      console.error("Error fetching data:", error);
-      setError(error.message);
-      setLoading(false);
-    } else {
-      setData(data);
-      setLoading(false);
-    }
-  };
+  const [localFilter, setLocalFilter] = useState([]);
 
   useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      const { data, error } = await supabase.rpc(
+        "get_events_by_classification_granularity",
+        {
+          granularity,
+          organisation_ids: filter.organisations,
+          discipline_list: filter.disciplines,
+        }
+      );
+
+      if (error) {
+        console.error("Error fetching data:", error);
+        setError(error.message);
+      } else {
+        const groupedData = data.reduce((acc, item) => {
+          const year = new Date(item.period).getFullYear();
+          if (!acc[year]) {
+            acc[year] = [];
+          }
+          acc[year].push(item);
+          return acc;
+        }, {});
+        setData(groupedData);
+        setLocalFilter(getYearRange(groupedData).slice(0, 3));
+      }
+      setLoading(false);
+    };
     fetchData();
   }, [granularity, filter]);
 
-  const chartData = data.map((d) => ({
-    period: d.period,
-    "Internasjonale løp": d[`${dataPoint}_international`],
-    "Nasjonale løp": d[`${dataPoint}_national`],
-    Mesterskap: d[`${dataPoint}_championchip`],
-    Kretsløp: d[`${dataPoint}_regional`],
-    Nærløp: d[`${dataPoint}_local`],
-  }));
+  const chartData = localFilter
+    .sort((a, b) => a - b)
+    .map((year) => {
+      const yearData = data[year] || [];
+      return {
+        period: year,
+        "Internasjonale løp": yearData.reduce(
+          (sum, d) => sum + (d[`${dataPoint}_international`] || 0),
+          0
+        ),
+        "Nasjonale løp": yearData.reduce(
+          (sum, d) => sum + (d[`${dataPoint}_national`] || 0),
+          0
+        ),
+        Mesterskap: yearData.reduce(
+          (sum, d) => sum + (d[`${dataPoint}_championchip`] || 0),
+          0
+        ),
+        Kretsløp: yearData.reduce(
+          (sum, d) => sum + (d[`${dataPoint}_regional`] || 0),
+          0
+        ),
+        Nærløp: yearData.reduce(
+          (sum, d) => sum + (d[`${dataPoint}_local`] || 0),
+          0
+        ),
+      };
+    });
 
   return (
     <Card
@@ -55,7 +89,7 @@ export function EventsCategoryChart(props) {
       decoration="top"
       decorationColor="fuchsia"
     >
-      <div className="flex justify-between items-start flex-col  mb-2 gap-2">
+      <div className="flex justify-between items-start flex-col mb-2 gap-2">
         <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium mb-2">
           {dataPoint === "number_of_events" ? "Løp" : "Starter"} pr kategori pr{" "}
           {granularityLookup[granularity].toLowerCase()}
@@ -70,14 +104,23 @@ export function EventsCategoryChart(props) {
             <SelectItem value="number_of_events">Antall løp</SelectItem>
             <SelectItem value="total_starts">Antall starter</SelectItem>
           </Select>
-          {/* <Select
+        </div>
+
+        <div className="flex justify-between items-center gap-3">
+          <MultiSelect
             className="w-64"
-            defaultValue="month"
-            onValueChange={(value) => setGranularity(value)}
+            value={localFilter}
+            onValueChange={(selectedYears) => setLocalFilter(selectedYears)}
           >
-            <SelectItem value="month">Måned</SelectItem>
-            <SelectItem value="year">År</SelectItem>
-          </Select> */}
+            {Object.keys(data).length > 0 &&
+              getYearRange(data)
+                .sort((a, b) => b - a)
+                .map((year) => (
+                  <MultiSelectItem key={`year-${year}`} value={year}>
+                    {year}
+                  </MultiSelectItem>
+                ))}
+          </MultiSelect>
         </div>
       </div>
 
