@@ -1,65 +1,68 @@
+import { useEffect, useState } from "react";
 import {
   Button,
   Card,
   LineChart,
   MultiSelect,
   MultiSelectItem,
-  Select,
-  SelectItem,
   Switch,
 } from "@tremor/react";
-import { useEffect, useState } from "react";
-
 import { supabase } from "../../supabaseClient";
 import { Spinner } from "../Spinner";
-import { transformDataForChart } from "../../helpers/chart";
+import { transformDataForChart, getYearRange } from "../../helpers/chart";
 
-export function EventsChartCompare(props) {
-  const { filter } = props;
-
+export function EventsChartCompare({ filter }) {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
   const [accumulate, setAccumulate] = useState(true);
   const [error, setError] = useState(null);
-  const [localFilter, setLocalFilter] = useState(["2024", "2019"]);
-
-  const fetchData = async () => {
-    setLoading(true);
-    setError(null);
-    const { data, error } = await supabase.rpc("get_events_starts", {
-      granularity: "month",
-      organisation_ids: filter.organisations,
-      discipline_list: filter.disciplines,
-    });
-
-    if (error) {
-      console.error("Error fetching data:", error);
-      setError(error.message);
-      setLoading(false);
-    } else {
-      const groupedData = data.reduce((acc, item) => {
-        const year = new Date(item.period).getFullYear();
-        if (!acc[year]) {
-          acc[year] = [];
-        }
-        acc[year].push(item);
-        return acc;
-      }, {});
-      setData(groupedData);
-      setLoading(false);
-    }
-  };
+  const [localFilter, setLocalFilter] = useState([]);
 
   useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+      const { data, error } = await supabase.rpc("get_events_starts", {
+        granularity: "month",
+        organisation_ids: filter.organisations,
+        discipline_list: filter.disciplines,
+      });
+
+      if (error) {
+        console.error("Error fetching data:", error);
+        setError(error.message);
+      } else {
+        const groupedData = data.reduce((acc, item) => {
+          const year = new Date(item.period).getFullYear();
+          if (!acc[year]) {
+            acc[year] = [];
+          }
+          acc[year].push(item);
+          return acc;
+        }, {});
+        setData(groupedData);
+        setLocalFilter(getYearRange(groupedData).slice(0, 3));
+      }
+      setLoading(false);
+    };
+
     fetchData();
   }, [filter]);
 
+  const chartYearLabels = Object.keys(data).length ? getYearRange(data) : [];
   const chartData = transformDataForChart(
     data,
     "total_starts",
     localFilter,
     accumulate
   );
+
+  const handleSelectChange = (selectedValues) => {
+    const sortedValues = selectedValues
+      .filter((year) => chartYearLabels.includes(year))
+      .sort((a, b) => b - a);
+    setLocalFilter(sortedValues);
+  };
 
   return (
     <Card
@@ -71,7 +74,6 @@ export function EventsChartCompare(props) {
         <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">
           Starter pr år
         </h3>
-
         <div className="flex md:flex-row flex-col items-start justify-between md:items-center gap-3">
           <div className="flex flex-row gap-3">
             <label
@@ -87,23 +89,19 @@ export function EventsChartCompare(props) {
               onChange={setAccumulate}
             />
           </div>
-
           <MultiSelect
             className="w-64"
-            defaultValue={["2024", "2019"]}
-            onValueChange={(e) => setLocalFilter(e)}
+            value={localFilter}
+            onValueChange={handleSelectChange}
           >
-            {Object.keys(data)
-              .sort((a, b) => b - a)
-              .map((year) => (
-                <MultiSelectItem value={year} key={`year-${year}`}>
-                  {year}
-                </MultiSelectItem>
-              ))}
+            {chartYearLabels.map((year) => (
+              <MultiSelectItem value={year} key={`year-${year}`}>
+                {year}
+              </MultiSelectItem>
+            ))}
           </MultiSelect>
         </div>
       </div>
-
       <div className="flex justify-center items-center h-80">
         {loading ? (
           <Spinner />

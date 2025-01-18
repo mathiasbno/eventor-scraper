@@ -86,3 +86,10 @@ export function getUniqueYears(data) {
     return acc;
   }, []);
 }
+
+export const getYearRange = (data) => {
+  const years = Object.keys(data).map(Number);
+  const minYear = Math.min(...years);
+  const currentYear = new Date().getFullYear();
+  return [...Array(currentYear - minYear + 1)].map((_, i) => (minYear + i).toString()).reverse();
+};
