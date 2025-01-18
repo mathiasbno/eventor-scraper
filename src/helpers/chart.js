@@ -86,8 +86,3 @@ export function getUniqueYears(data) {
     return acc;
   }, []);
 }
-
-export function getChartYearLabels(range) {
-  const currentYear = new Date().getFullYear();
-  return Array.from({ length: range }, (_, i) => (currentYear - i).toString());
-}
