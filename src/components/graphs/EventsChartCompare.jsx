@@ -4,15 +4,13 @@ import {
   LineChart,
   MultiSelect,
   MultiSelectItem,
-  Select,
-  SelectItem,
   Switch,
 } from "@tremor/react";
 import { useEffect, useState } from "react";
 
 import { supabase } from "../../supabaseClient";
 import { Spinner } from "../Spinner";
-import { transformDataForChart } from "../../helpers/chart";
+import { transformDataForChart, getChartYearLabels } from "../../helpers/chart";
 
 export function EventsChartCompare(props) {
   const { filter } = props;
@@ -21,7 +19,9 @@ export function EventsChartCompare(props) {
   const [data, setData] = useState([]);
   const [accumulate, setAccumulate] = useState(true);
   const [error, setError] = useState(null);
-  const [localFilter, setLocalFilter] = useState(["2024", "2019"]);
+  const [localFilter, setLocalFilter] = useState([]);
+
+  const chartYearLabels = getChartYearLabels(3);
 
   const fetchData = async () => {
     setLoading(true);
@@ -46,6 +46,7 @@ export function EventsChartCompare(props) {
         return acc;
       }, {});
       setData(groupedData);
+      setLocalFilter(chartYearLabels);
       setLoading(false);
     }
   };
@@ -90,16 +91,19 @@ export function EventsChartCompare(props) {
 
           <MultiSelect
             className="w-64"
-            defaultValue={["2024", "2019"]}
-            onValueChange={(e) => setLocalFilter(e)}
+            value={localFilter}
+            onValueChange={(selectedValues) => {
+              const sortedValues = chartYearLabels.filter((year) =>
+                selectedValues.includes(year)
+              );
+              setLocalFilter(sortedValues);
+            }}
           >
-            {Object.keys(data)
-              .sort((a, b) => b - a)
-              .map((year) => (
-                <MultiSelectItem value={year} key={`year-${year}`}>
-                  {year}
-                </MultiSelectItem>
-              ))}
+            {chartYearLabels.map((year) => (
+              <MultiSelectItem value={year} key={`year-${year}`}>
+                {year}
+              </MultiSelectItem>
+            ))}
           </MultiSelect>
         </div>
       </div>
