@@ -89,7 +89,7 @@ export function EventSearch(props) {
           placeholder="Søk på løpsnavn..."
           onChange={(e) => setEventName(e.target.value)}
         />
-        <Button variant="secondary" onClick={fetchData}>
+        <Button variant="secondary" onClick={fetchData} disabled={!eventName}>
           Søk
         </Button>
       </div>
