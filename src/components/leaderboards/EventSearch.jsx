@@ -49,6 +49,9 @@ export function EventSearch(props) {
   const [eventName, setEventName] = useState("");
   const [grouping, setGrouping] = useState("none");
   const [formattedData, setFormattedData] = useState([]);
+  const [sortBy, setSortBy] = useState("date");
+  const [isDescending, setIsDescending] = useState(true);
+  const [isSearchClicked, setIsSearchClicked] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -66,17 +69,32 @@ export function EventSearch(props) {
         .map((item) => ({ ...item, "Antall starter": item.total_starts }))
         .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
       setData(processedDate);
-      setLoading(false);
+      setIsSearchClicked(true);
     }
   };
 
   useEffect(() => {
     const groupedData = groupDataByStartDate(data, grouping);
-    const sortedData = groupedData.sort(
-      (a, b) => new Date(a.startDate) - new Date(b.startDate)
-    );
-    setFormattedData(sortedData);
+    setFormattedData(groupedData);
   }, [grouping, data]);
+
+  const handleSort = (field) => {
+    if (sortBy === field) {
+      setIsDescending(!isDescending);
+    } else {
+      setSortBy(field);
+      setIsDescending(field === "date");
+    }
+  };
+
+  const sortedData = [...data].sort((a, b) => {
+    const sortComparator =
+      sortBy === "date"
+        ? (a, b) => new Date(a.startDate) - new Date(b.startDate)
+        : (a, b) => a.eventName.localeCompare(b.eventName);
+
+    return isDescending ? -sortComparator(a, b) : sortComparator(a, b);
+  });  
 
   return (
     <Card className="col-span-2" decoration="top" decorationColor="emerald">
@@ -106,6 +124,21 @@ export function EventSearch(props) {
         </Select>
       </div>
 
+      {isSearchClicked && sortedData.length > 0 && (
+        <div className="flex gap-3 mt-5">
+          {["date", "name"].map((field) => (
+            <Button
+              key={field}
+              variant={sortBy === field ? "primary" : "secondary"}
+              onClick={() => handleSort(field)}
+            >
+              {field === "date" ? "Dato" : "Navn"}
+              {sortBy === field && <span>{isDescending ? " ↓" : " ↑"}</span>}
+            </Button>
+          ))}
+        </div>
+      )}
+
       {!loading ? (
         <>
           {data.length ? (
@@ -121,27 +154,25 @@ export function EventSearch(props) {
                 onValueChange={(v) => console.log(v)}
               />
               <List>
-                {[...data]
-                  .sort((a, b) => new Date(b.startDate) - new Date(a.startDate))
-                  .map((item, index) => (
-                    <ListItem key={`event-${index}`}>
-                      <p>
-                        <a
-                          className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-                          href={`https://eventor.orientering.no/Events/Show/${item.eventId}`}
-                          target="_blank"
-                        >
-                          {item.eventName}
-                        </a>
-                        <span>
-                          {" "}
-                          ({item.organisationNames} -{" "}
-                          {new Date(item.startDate).getFullYear()})
-                        </span>
-                      </p>
-                      <span className="font-medium">{item.total_starts}</span>
-                    </ListItem>
-                  ))}
+                {sortedData.map((item, index) => (
+                  <ListItem key={`event-${index}`}>
+                    <p>
+                      <a
+                        className="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                        href={`https://eventor.orientering.no/Events/Show/${item.eventId}`}
+                        target="_blank"
+                      >
+                        {item.eventName}
+                      </a>
+                      <span>
+                        {" "}
+                        ({item.organisationNames} -{" "}
+                        {new Date(item.startDate).getFullYear()})
+                      </span>
+                    </p>
+                    <span className="font-medium">{item.total_starts}</span>
+                  </ListItem>
+                ))}
               </List>
             </>
           ) : null}
