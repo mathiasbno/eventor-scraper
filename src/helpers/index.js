@@ -275,6 +275,8 @@ export const formatRaceData = (_results, _entries, _entryFees, event) => {
 };
 
 export const formatEvents = (events) => {
+  // TODO handle cancelled events, dont save competitors
+  // item.eventStatusId === "10"
   return events.map((item) => {
     const { classes, entries, results, runners, entryFees } = formatRaceData(
       item.results,
