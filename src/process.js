@@ -304,6 +304,16 @@ const detectNameChanges = (data) => {
   return changes;
 };
 
+const fetchAndFormatEvent = async (eventId) => {
+  try {
+    const event = await fetchEvent(eventId);
+    const formattedEvent = formatEvents([event]);
+    return formattedEvent[0];
+  } catch (err) {
+    console.error(`Error fetching and formatting event ${eventId}:`, err);
+  }
+};
+
 export const fetchEventsAndInsert = async (
   _startDate,
   _endDate,
