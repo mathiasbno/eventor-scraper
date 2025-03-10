@@ -94,7 +94,7 @@ export function EventSearch(props) {
         : (a, b) => a.eventName.localeCompare(b.eventName);
 
     return isDescending ? -sortComparator(a, b) : sortComparator(a, b);
-  });  
+  });
 
   return (
     <Card className="col-span-2" decoration="top" decorationColor="emerald">
@@ -112,9 +112,9 @@ export function EventSearch(props) {
         </Button>
       </div>
 
-      <div>
+      <div className="flex gap-3 justify-between mb-5">
         <Select
-          className="w-64 mt-1"
+          className="w-64"
           defaultValue="none"
           onValueChange={(value) => setGrouping(value)}
         >
@@ -122,22 +122,22 @@ export function EventSearch(props) {
           <SelectItem value="year">År</SelectItem>
           <SelectItem value="day">Dag</SelectItem>
         </Select>
-      </div>
 
-      {isSearchClicked && sortedData.length > 0 && (
-        <div className="flex gap-3 mt-5">
-          {["date", "name"].map((field) => (
-            <Button
-              key={field}
-              variant={sortBy === field ? "primary" : "secondary"}
-              onClick={() => handleSort(field)}
-            >
-              {field === "date" ? "Dato" : "Navn"}
-              {sortBy === field && <span>{isDescending ? " ↓" : " ↑"}</span>}
-            </Button>
-          ))}
-        </div>
-      )}
+        {isSearchClicked && sortedData.length > 0 && (
+          <div className="flex gap-3">
+            {["date", "name"].map((field) => (
+              <Button
+                key={field}
+                variant={sortBy === field ? "primary" : "secondary"}
+                onClick={() => handleSort(field)}
+              >
+                {field === "date" ? "Dato" : "Navn"}
+                {sortBy === field && <span>{isDescending ? " ↓" : " ↑"}</span>}
+              </Button>
+            ))}
+          </div>
+        )}
+      </div>
 
       {!loading ? (
         <>
