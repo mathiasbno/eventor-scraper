@@ -1,0 +1,36 @@
+name: Deploy Eventor scraper
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add host key
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to VPS
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+            cd ~/eventor-scraper/eventor-scraper
+            && git pull
+
+            && cd ~
+            && docker-compose build eventor-scraper
+            && docker-compose stop eventor-scraper
+            && docker-compose rm -sf eventor-scraper
+            && docker-compose up -d eventor-scraper
+          "
