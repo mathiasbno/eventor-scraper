@@ -26,11 +26,11 @@ jobs:
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
             cd ~/eventor-scraper/eventor-scraper
-            && git pull
+            git pull
 
-            && cd ~
-            && docker-compose build eventor-scraper
-            && docker-compose stop eventor-scraper
-            && docker-compose rm -sf eventor-scraper
-            && docker-compose up -d eventor-scraper
+            cd ~
+            docker-compose build eventor-scraper
+            docker-compose stop eventor-scraper
+            docker-compose rm -sf eventor-scraper
+            docker-compose up -d eventor-scraper
           "
