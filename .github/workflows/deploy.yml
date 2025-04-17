@@ -28,6 +28,8 @@ jobs:
             cd ~/eventor-scraper/eventor-scraper
             git pull
 
+            npx supabase db push --db-url postgresql://postgres.{{ secrets.POSTGRES_TENNANT }}:{{ secrets.POSTGRES_PASSWORD }}@{{ secrets.POSTGRES_HOST }}:6544/postgres
+
             cd ~
             docker-compose build eventor-scraper
             docker-compose stop eventor-scraper
