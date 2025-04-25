@@ -2,6 +2,7 @@ import EventorApi from "eventor-api";
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
+import cron from "node-cron";
 
 dotenv.config();
 
@@ -14,31 +15,37 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+cron.schedule(
+  "0 1 * * *",
+  async () => {
+    console.log("Fetching new events");
+    try {
+      const { fetchEventsAndInsert, fetchAndInsertOrgs } = await import(
+        "../src/process.js"
+      );
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() - 7);
+
+      await fetchAndInsertOrgs();
+      await fetchEventsAndInsert(startDate, endDate, 7);
+
+      console.log(
+        "Daily cron job completed successfully: Events imported for the last 7 days"
+      );
+    } catch (error) {
+      console.error("Error in daily cron job:", error);
+    }
+  },
+  {
+    scheduled: true,
+    timezone: "Europe/Stockholm",
+  }
+);
+
 app.get("/api", (req, res) => {
   res.setHeader("Cache-Control", "s-max-age=1, stale-while-revalidate");
   res.status(200).send("API Ready to go");
-});
-
-app.get("/api/cron", async (req, res) => {
-  if (req.get("Authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
-    return res.status(401).end("Unauthorized");
-  }
-
-  try {
-    const { fetchEventsAndInsert, fetchAndInsertOrgs } = await import(
-      "../src/process.js"
-    );
-    const startDate = new Date();
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() - 7);
-
-    await fetchAndInsertOrgs();
-    await fetchEventsAndInsert(startDate, endDate, 7);
-
-    res.status(200).end("Events imported for the last 7 days");
-  } catch (error) {
-    res.status(500).end(error);
-  }
 });
 
 app.get("/api/events", async (req, res) => {
