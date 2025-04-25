@@ -97,10 +97,11 @@ const startDate = new Date("2023-01-01");
 const endDate = new Date("2023-12-31");
 // (To avoid craches we recomend doing a year at a time when processing)
 
-const granularity = 30; // some times the database times out with larger granularities when there are big races being processed from Eventor
+const granularity = 30; // some times the database times out with larger granularities when there are big races being processed from Eventor. Adjust granularity accordingly
 const dryrun = false; // set to true if you just want the fetch data and not insert it into the database
 
-fetchEventsAndInsert(startDate, endDate, granularity, dryrun);
+await fetchAndInsertOrgs(); // we start by fetching and inserting organisations in case there are nre once since last import
+await fetchEventsAndInsert(startDate, endDate, granularity, dryrun);
 ```
 
 _Note that Eventor can be a bit slow during the day when in seasson, so you might experience some timeouts. If you plan to download a lot of data its recomended to do it in the evenings_
