@@ -25,7 +25,7 @@ cron.schedule(
       );
       const startDate = new Date();
       const endDate = new Date();
-      endDate.setDate(endDate.getDate() - 7);
+      startDate.setDate(endDate.getDate() - 7);
 
       await fetchAndInsertOrgs();
       await fetchEventsAndInsert(startDate, endDate, 7);
