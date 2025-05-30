@@ -104,7 +104,7 @@ export const formatRunners = (results, entries, event) => {
 };
 
 export const formatResults = (results, entries, event) => {
-  const { eventId, eventForm } = event;
+  const { eventId, eventForm, eventStatusId } = event;
 
   const items = results.length ? results : ensureArray(entries);
 
@@ -126,7 +126,13 @@ export const formatResults = (results, entries, event) => {
     // If there are not results we use the entries to make an estimate of the results.
     // This only apoplies to relay events, as thats whats used especially for "Lagkonkuransen"
     // where many < 12y runners are and we want to track them in the system
-    if (!results.length && eventForm === "RelaySingleDay") {
+    // OBS OBS: only do this for rases with eventStatusId === 12 since we only want to process
+    // compleated races
+    if (
+      !results.length &&
+      eventForm === "RelaySingleDay" &&
+      eventStatusId === "9"
+    ) {
       return teamCompetitor.map((entry) => {
         const fullName = `${entry.person.personName.given._} ${entry.person.personName.family}`;
         // const personId = entry.person.personId || fullName;
@@ -182,8 +188,6 @@ export const formatResults = (results, entries, event) => {
 export const formatEntries = (_entries, event) => {
   const { eventId, eventForm } = event;
   const entries = ensureArray(_entries);
-
-  return [];
 
   const data = entries.flatMap((item) => {
     if (eventForm === "RelaySingleDay") {
