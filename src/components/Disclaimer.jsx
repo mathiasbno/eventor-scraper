@@ -2,7 +2,7 @@ import { Card } from "@tremor/react";
 
 export function Disclaimer() {
   return (
-    <Card className="col-span-4">
+    <Card className="col-span-2">
       <div className="flex flex-col gap-2">
         <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">
           Om dataene

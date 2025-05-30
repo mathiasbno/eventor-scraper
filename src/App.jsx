@@ -25,6 +25,7 @@ import { DistanceChart } from "./components/graphs/DistanceChart";
 import { LightConditionsChart } from "./components/graphs/LightConditionsChart";
 import { EntryFeesChart } from "./components/graphs/EntryFeesChart";
 import { EventsMap } from "./components/EventsMap";
+import { Metadata } from "./components/Metadata";
 
 function App() {
   const [filter, setFilter] = useState(null);
@@ -68,6 +69,8 @@ function App() {
               <EventsMap filter={filter} />
             </>
           ) : null}
+
+          <Metadata />
           <Disclaimer />
         </div>
       </div>
