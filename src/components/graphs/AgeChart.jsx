@@ -14,9 +14,15 @@ import { monthNames } from "../../helpers/chart";
 export function AgeChart(props) {
   const { filter } = props;
 
+  const generateDefaultFilter = () => {
+    const currentYear = new Date().getFullYear();
+    const prevYears = currentYear - 5;
+    return [currentYear.toString(), prevYears.toString()];
+  };
+
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState([]);
-  const [localFilter, setLocalFilter] = useState(["2024", "2019"]);
+  const [localFilter, setLocalFilter] = useState(generateDefaultFilter());
   const [error, setError] = useState(null);
   const [selectedCategories, setSelectedCategories] = useState([
     "total_starts_under_9",
@@ -24,9 +30,7 @@ export function AgeChart(props) {
     "total_starts_11_12",
     "total_starts_13_14",
     "total_starts_15_16",
-    "total_starts_17_18",
-    "total_starts_19_20",
-    "total_starts_21_34",
+    "total_starts_ungdom",
   ]);
 
   const categoryLabels = {
@@ -103,7 +107,7 @@ export function AgeChart(props) {
         <div className="flex md:flex-row flex-col justify-between items-center gap-3">
           <MultiSelect
             className="w-64"
-            defaultValue={["2024", "2019"]}
+            defaultValue={generateDefaultFilter()}
             onValueChange={(e) => setLocalFilter(e)}
           >
             {data.map((item) => (

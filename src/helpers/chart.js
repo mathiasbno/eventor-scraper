@@ -91,5 +91,23 @@ export const getYearRange = (data) => {
   const years = Object.keys(data).map(Number);
   const minYear = Math.min(...years);
   const currentYear = new Date().getFullYear();
-  return [...Array(currentYear - minYear + 1)].map((_, i) => (minYear + i).toString()).reverse();
+  return [...Array(currentYear - minYear + 1)]
+    .map((_, i) => (minYear + i).toString())
+    .reverse();
+};
+
+export const formatTimeAgo = (dateString) => {
+  const now = new Date();
+  const eventDate = new Date(dateString);
+  const diffInMinutes = Math.floor((now - eventDate) / (1000 * 60));
+
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} min siden`;
+  } else if (diffInMinutes < 1440) {
+    const hours = Math.floor(diffInMinutes / 60);
+    return `${hours}t siden`;
+  } else {
+    const days = Math.floor(diffInMinutes / 1440);
+    return `${days}d siden`;
+  }
 };

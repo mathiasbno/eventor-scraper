@@ -15,21 +15,17 @@ import { monthNames } from "../../helpers/chart";
 export function AgeChartCohort(props) {
   const { filter } = props;
 
-  const defaultFilter = [
-    "2000",
-    "2001",
-    "2002",
-    "2003",
-    "2004",
-    "2005",
-    "2006",
-    "2007",
-    "2008",
-    "2009",
-    "2010",
-    "2011",
-    "2012",
-  ];
+  // Generate a dynamic defaultFilter for the last 10 years from the current year
+  const generateDefaultFilter = () => {
+    const currentYear = new Date().getFullYear();
+    const yearsArray = [];
+    for (let i = 0; i < 10; i++) {
+      yearsArray.push((currentYear - 10 - i).toString());
+    }
+    return yearsArray;
+  };
+
+  const defaultFilter = generateDefaultFilter();
 
   const [loading, setLoading] = useState(false);
   const [dataOrigin, setDataOrigin] = useState([]);
@@ -104,7 +100,7 @@ export function AgeChartCohort(props) {
             (item) =>
               item.birth_year !== null &&
               item.birth_year > 1920 &&
-              item.birth_year < new Date().getFullYear() - 9
+              item.birth_year <= new Date().getFullYear()
           )
           .sort((a, b) => a.event_year - b.event_year)
       );
