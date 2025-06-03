@@ -26,9 +26,13 @@ import { LightConditionsChart } from "./components/graphs/LightConditionsChart";
 import { EntryFeesChart } from "./components/graphs/EntryFeesChart";
 import { EventsMap } from "./components/EventsMap";
 import { Metadata } from "./components/Metadata";
+import { DownloadCSV } from "./components/DownloadCSV";
 
 function App() {
   const [filter, setFilter] = useState(null);
+
+  const query = new URLSearchParams(window.location.search);
+  const showExperimental = query.has("experimental");
 
   return (
     <>
@@ -72,6 +76,7 @@ function App() {
 
           <Metadata />
           <Disclaimer />
+          {showExperimental ? <DownloadCSV /> : null}
         </div>
       </div>
     </>
