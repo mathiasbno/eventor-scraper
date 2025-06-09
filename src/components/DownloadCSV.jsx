@@ -26,44 +26,32 @@ export const DownloadCSV = () => {
     setSuccess("");
 
     try {
-      const { data, error } = await supabase
-        .from("entryfees")
-        .select(
-          `
-          eventId,
-          amount,
-          type,
-          classType,
-          name,
-          events!inner (
-            name,
-            startDate
-          )
-        `
-        )
-        .or("valueOperator.neq.percent,valueOperator.is.null")
-        .gte("events.startDate", `${selectedYear}-01-01`)
-        .lte("events.startDate", `${selectedYear}-12-31`);
+      const { data, error } = await supabase.rpc("get_entry_fees_csv", {
+        year_param: selectedYear,
+      });
+
+      console.log("Raw data from RPC:", data);
 
       // Flatten the data
       const flattenedData = data?.map((row) => ({
-        eventId: row.eventId,
+        eventId: row.event_id,
         amount: row.amount,
         type: row.type,
-        classType: row.classType,
+        classType: row.classtype,
         name: row.name,
-        eventName: row.events.name,
-        eventStartDate: row.events.startDate,
+        eventName: row.event_name,
+        eventDate: row.startdate,
+        organiserRunnersCount: row.organiser_runners_count,
       }));
 
       // Convert to CSV manually or use a library
       const csvContent = [
         // Header
-        "eventId,amount,type,classType,name,eventName,eventStartDate",
+        "eventId,organiserRunnersCount,amount,type,classType,name,eventName,eventStartDate",
         // Data rows
         ...flattenedData.map(
           (row) =>
-            `${row.eventId},${row.amount},${row.type},${row.classType},"${row.name}","${row.eventName}",${row.eventStartDate}`
+            `${row.eventId},${row.organiserRunnersCount},${row.amount},${row.type},${row.classType},"${row.name}","${row.eventName}",${row.eventDate}`
         ),
       ].join("\n");
 
