@@ -191,6 +191,34 @@ const fetchEvents = async (options) => {
   }
 };
 
+const batchInsert = async (data, table, options, batchSize = 1000) => {
+  const insertedData = [];
+  let error = null;
+
+  for (let i = 0; i < data.length; i += batchSize) {
+    const batch = data.slice(i, i + batchSize);
+
+    console.log(
+      `Processing batch ${Math.ceil(i / batchSize) + 1} of ${table}...`
+    );
+
+    const { data: batchData, error: batchError } = await supabase
+      .from(table)
+      .upsert(batch, options)
+      .select();
+
+    if (batchError) {
+      error = batchError;
+    }
+
+    if (batchData) {
+      insertedData.push(...batchData);
+    }
+  }
+
+  return { data: insertedData, error };
+};
+
 export const fetchAndInsertOrgs = async () => {
   const organisations = await fetchOrgs();
   const formattedOrganisations = formatOrganisations(organisations);
@@ -200,50 +228,51 @@ export const fetchAndInsertOrgs = async () => {
     .upsert(formattedOrganisations, { onConflict: "organisationId" })
     .select();
 
-  console.log(data, error);
+  if (error) {
+    console.error("Error inserting organisations:", error);
+    return;
+  }
+
+  console.log(`Inserted ${data.length} organisations`);
 };
 
 const insertData = async (formattedEvents, startDate, toDate) => {
-  const { data: eventsData, error: eventsError } = await supabase
-    .from("events")
-    .upsert(
-      formattedEvents.flatMap((item) => item.event),
-      {
-        onConflict: "eventId",
-        ignoreDuplicates: false,
-      }
-    )
-    .select();
-  const { data: classesData, error: classesError } = await supabase
-    .from("classes")
-    .upsert(
-      formattedEvents.flatMap((item) => item.classes),
-      {
-        onConflict: "classId",
-        ignoreDuplicates: false,
-      }
-    )
-    .select();
-  const { data: runnersData, error: runnersError } = await supabase
-    .from("runners")
-    .upsert(
-      filterAndMergeRunners(formattedEvents.flatMap((item) => item.runners)),
-      {
-        onConflict: "personId",
-        ignoreDuplicates: false,
-      }
-    )
-    .select();
-  const { data: resultsData, error: resultsError } = await supabase
-    .from("results")
-    .upsert(
-      formattedEvents.flatMap((item) => item.results),
-      {
-        onConflict: "resultId",
-        ignoreDuplicates: false,
-      }
-    )
-    .select();
+  const { data: eventsData, error: eventsError } = await batchInsert(
+    formattedEvents.flatMap((item) => item.event),
+    "events",
+    {
+      onConflict: "eventId",
+      ignoreDuplicates: false,
+    }
+  );
+
+  const { data: classesData, error: classesError } = await batchInsert(
+    formattedEvents.flatMap((item) => item.classes),
+    "classes",
+    {
+      onConflict: "classId",
+      ignoreDuplicates: false,
+    }
+  );
+
+  const { data: runnersData, error: runnersError } = await batchInsert(
+    filterAndMergeRunners(formattedEvents.flatMap((item) => item.runners)),
+    "runners",
+    {
+      onConflict: "personId",
+      ignoreDuplicates: false,
+    }
+  );
+
+  const { data: resultsData, error: resultsError } = await batchInsert(
+    formattedEvents.flatMap((item) => item.results),
+    "results",
+    {
+      onConflict: "resultId",
+      ignoreDuplicates: false,
+    }
+  );
+
   const { data: entriesData, error: entriesError } = await supabase
     .from("entries")
     .upsert(
