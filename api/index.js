@@ -15,27 +15,35 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Extract cron job functionality to reusable function
+async function updateEventsData() {
+  console.log("Fetching new events");
+  try {
+    const { fetchEventsAndInsert, fetchAndInsertOrgs } = await import(
+      "../src/process.js"
+    );
+    const startDate = new Date();
+    const endDate = new Date();
+    startDate.setDate(endDate.getDate() - 7);
+
+    await fetchAndInsertOrgs();
+    await fetchEventsAndInsert(startDate, endDate, 7);
+
+    console.log(
+      "Events update completed successfully: Events imported for the last 7 days"
+    );
+    return true;
+  } catch (error) {
+    console.error("Error updating events data:", error);
+    return false;
+  }
+}
+
 cron.schedule(
   "0 1 * * *",
   async () => {
-    console.log("Fetching new events");
-    try {
-      const { fetchEventsAndInsert, fetchAndInsertOrgs } = await import(
-        "../src/process.js"
-      );
-      const startDate = new Date();
-      const endDate = new Date();
-      startDate.setDate(endDate.getDate() - 7);
-
-      await fetchAndInsertOrgs();
-      await fetchEventsAndInsert(startDate, endDate, 7);
-
-      console.log(
-        "Daily cron job completed successfully: Events imported for the last 7 days"
-      );
-    } catch (error) {
-      console.error("Error in daily cron job:", error);
-    }
+    await updateEventsData();
+    console.log("Daily cron job completed");
   },
   {
     scheduled: true,
@@ -46,6 +54,24 @@ cron.schedule(
 app.get("/api", (req, res) => {
   res.setHeader("Cache-Control", "s-max-age=1, stale-while-revalidate");
   res.status(200).send("API Ready to go");
+});
+
+// Add new endpoint to manually trigger update
+app.get("/api/force-update", async (req, res) => {
+  console.log("Manual update triggered");
+  try {
+    const success = await updateEventsData();
+    if (success) {
+      res.status(200).json({ message: "Update completed successfully" });
+    } else {
+      res.status(500).json({ message: "Update failed" });
+    }
+  } catch (error) {
+    console.error("Error in force update:", error);
+    res
+      .status(500)
+      .json({ message: "Error processing update", error: error.message });
+  }
 });
 
 app.get("/api/events", async (req, res) => {
