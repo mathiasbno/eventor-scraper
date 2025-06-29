@@ -250,7 +250,7 @@ export const formatEntryFees = (entryFees, event) => {
     entryFeeId: item.entryFeeId,
     name: item.name,
     amount: parseInt(item.amount._),
-    type: item.type === "elite" ? estimateType(item.name) : item.type,
+    type: item.type === "elite" ? estimateEntryFeeType(item.name) : item.type,
     valueOperator: item?.valueOperator,
     order: estimateOrder(item.name),
     classType: estimateClassType(item.name),
@@ -379,11 +379,12 @@ const organisationIdRemap = (organisationId) => {
   return organisationId;
 };
 
-const estimateType = (name) => {
+const estimateEntryFeeType = (name) => {
   const lowerName = name?.toLowerCase() || "";
   if (lowerName?.includes("voks")) return "adult";
   if (lowerName?.includes("ungdom")) return "youth";
-  if (lowerName?.includes("barn")) return "kids";
+  if (lowerName?.includes("barn") || lowerName?.includes("N-åpen"))
+    return "kids";
   return "notSpecified";
 };
 
