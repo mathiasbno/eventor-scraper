@@ -42,8 +42,8 @@ async function updateEventsData() {
 cron.schedule(
   "0 1 * * *",
   async () => {
+    console.log(`Daily cron job started for ${new Date().toISOString()}`);
     await updateEventsData();
-    console.log("Daily cron job completed");
   },
   {
     scheduled: true,
