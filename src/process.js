@@ -450,38 +450,3 @@ export const fetchEventsAndInsert = async (
     startDate.setDate(startDate.getDate() + granularity);
   }
 };
-
-// Get the last 7 days of events
-const startDate = new Date("2024-01-01");
-const endDate = new Date();
-// const startDate = new Date().setDate(new Date().getDate() - 7);
-// const endDate = new Date();
-
-const granularity = 30; // some times the database times out with larger granularities when there are big races being processed from Eventor
-const dryrun = false; // set to true if you just want the fetch data and not insert it into the database
-
-// await fetchAndInsertOrgs();
-await fetchEventsAndInsert(startDate, endDate, granularity, dryrun);
-
-// await mergeDuplicateRunners(1, 2020, 2024);
-// await mergeDuplicateRunners(2, 2020, 2024);
-// await removeRunnersWithoutResult();
-
-// const event = await fetchEvent(18802);
-// let formattedEvents = formatEvents([event]);
-// console.log(
-//   //   formattedEvents[0].results.map((item) => ({
-//   //     id: formattedEvents[0].runners.find((i) => i.personId === item.personId)
-//   //       .personId,
-//   //     name: formattedEvents[0].runners.find((i) => i.personId === item.personId)
-//   //       .fullName,
-//   //   })),
-//   formattedEvents[0].runners.find((i) => i.personId === "37009"),
-//   formattedEvents[0].classes.length,
-//   formattedEvents[0].entries.length,
-//   formattedEvents[0].runners.length,
-//   formattedEvents[0].results.length,
-//   formattedEvents[0].event
-// );
-
-// insertData(formattedEvents);
