@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { Divider } from "@tremor/react";
-import { Analytics } from "@vercel/analytics/react";
 
 import { StartsInYear } from "./components/kpi/StartsInYear";
 import { UniqueRunners } from "./components/kpi/UniqueRunners";
