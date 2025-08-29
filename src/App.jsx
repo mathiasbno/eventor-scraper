@@ -36,7 +36,6 @@ function App() {
 
   return (
     <>
-      <Analytics />
       <div className="bg-[#f8f8f8] dark:bg-[#0e1423]">
         <div className="flex flex-wrap md:grid grid-cols-4 gap-x-4 gap-y-4 p-5 max-w-screen-xl mx-auto bg-[#f8f8f8] dark:bg-[#0e1423]">
           <Contribute />

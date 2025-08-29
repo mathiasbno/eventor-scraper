@@ -43,7 +43,7 @@ $ npm run dev
 
 ### Production
 
-We use Vercel to host the website. Pushing to master autodeploys to master.
+The website is now hosted in a private VPS server running as a Docker container with its own Supabase instance also running on the VPS server as a Docker service.
 
 ## Database
 
