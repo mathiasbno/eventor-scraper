@@ -17,14 +17,15 @@ app.use(cors());
 
 // Extract cron job functionality to reusable function
 async function updateEventsData() {
-  console.log("Fetching new events");
+  const startDate = new Date();
+  const endDate = new Date();
+  startDate.setDate(endDate.getDate() - 7);
+
+  console.log("Fetching new events", startDate, endDate);
   try {
     const { fetchEventsAndInsert, fetchAndInsertOrgs } = await import(
       "../src/process.js"
     );
-    const startDate = new Date();
-    const endDate = new Date();
-    startDate.setDate(endDate.getDate() - 7);
 
     await fetchAndInsertOrgs();
     await fetchEventsAndInsert(startDate, endDate, 7);
