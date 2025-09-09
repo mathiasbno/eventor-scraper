@@ -60,8 +60,6 @@ export function Metadata() {
     return formatTimeAgo(lastUpdated);
   };
 
-  console.log(new Date(lastUpdated).toISOString().split("T")[1].split(".")[0]);
-
   return (
     <Card className="col-span-2">
       <div className="flex flex-col gap-2">
