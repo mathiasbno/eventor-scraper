@@ -167,12 +167,28 @@ export const formatResults = (results, entries, event) => {
           person.raceResult?.result?.resultId ||
           `${eventId}${person.bibNumber}${personId}`;
 
+        const isInClassList = ["11", "12", "13", "14", "15", "16"].some(
+          (term) => item.eventClass?.name.includes(term)
+        );
+
+        if (!isInClassList) {
+          return null;
+        }
+
         return {
           resultId: resultId,
-          classId: item.eventClass?.eventClassId,
+          className: item.eventClass?.name,
           eventId: eventId,
           personId: personId,
           date: new Date(event?.startDate?.date)?.toISOString(),
+          time:
+            person.result?.resultPosition === "0" ? null : person.result?.time,
+          timeDiff:
+            person.result?.resultPosition === "0"
+              ? null
+              : person.result?.timeDiff,
+          position: person.result?.resultPosition,
+          status: person.result?.competitorStatus.value,
           name: fullName,
         };
       })
@@ -308,10 +324,7 @@ export const formatEvents = (events) => {
         ? entries.length
         : parseInt(item.competiorCount[0]?.numberOfEntries || 0);
 
-    let numberOfStarts =
-      item.competiorCount[0]?.numberOfStarts === "0"
-        ? results.length
-        : parseInt(item.competiorCount[0]?.numberOfStarts || 0);
+    let numberOfStarts = results.length;
 
     // Make exceptions for relay events so we count the number of starts as
     // personal starts and not team starts
@@ -326,26 +339,148 @@ export const formatEvents = (events) => {
       numberOfStarts = numberOfEntries;
     }
 
+    // Group results by className
+    const groupedResults = results.reduce((acc, result) => {
+      const { className } = result;
+
+      if (!acc[className]) {
+        acc[className] = [];
+      }
+      acc[className].push(result);
+      return acc;
+    }, {});
+
+    // For each class we want to add some metadata like the max time, min time and avrage time
+    // Times are in string format  '1:19:21' and timeDiff represents the time behind the winner
+    Object.keys(groupedResults).forEach((className) => {
+      const classResults = groupedResults[className];
+
+      const timesInSeconds = classResults
+        .map((r) => r.time)
+        .filter(Boolean)
+        .map((timeStr) => {
+          const parts = timeStr.split(":").map(Number);
+          // If only MM:SS, treat as 0:MM:SS
+          if (parts.length === 2) {
+            parts.unshift(0);
+          }
+          return parts.reduce(
+            (total, part, index) =>
+              total + part * Math.pow(60, parts.length - 1 - index),
+            0
+          );
+        });
+
+      // Calculate timeDiffs in seconds (relative to winner)
+      const timeDiffsInSeconds = classResults
+        .map((r) => r.timeDiff)
+        .filter(Boolean)
+        .map((diffStr) => {
+          const parts = diffStr.split(":").map(Number);
+          // If only MM:SS, treat as 0:MM:SS
+          if (parts.length === 2) {
+            parts.unshift(0);
+          }
+          return parts.reduce(
+            (total, part, index) =>
+              total + part * Math.pow(60, parts.length - 1 - index),
+            0
+          );
+        });
+
+      if (timesInSeconds.length > 0) {
+        const maxTime = Math.max(...timesInSeconds);
+        const minTime = Math.min(...timesInSeconds);
+        const avgTime =
+          timesInSeconds.reduce((sum, t) => sum + t, 0) / timesInSeconds.length;
+
+        // Calculate medianTime
+        let medianTime = null;
+        if (timesInSeconds.length > 0) {
+          const sortedTimes = [...timesInSeconds].sort((a, b) => a - b);
+          const mid = Math.floor(sortedTimes.length / 2);
+          if (sortedTimes.length % 2 === 0) {
+            medianTime = Math.round(
+              (sortedTimes[mid - 1] + sortedTimes[mid]) / 2
+            );
+          } else {
+            medianTime = sortedTimes[mid];
+          }
+        }
+
+        // Convert back to HH:MM:SS format
+        const formatTime = (totalSeconds) => {
+          const hours = Math.floor(totalSeconds / 3600);
+          const minutes = Math.floor((totalSeconds % 3600) / 60);
+          const seconds = totalSeconds % 60;
+          return [hours, minutes, seconds]
+            .map((v) => v.toString().padStart(2, "0"))
+            .join(":");
+        };
+
+        // Calculate medianDiff and maxDiff (in seconds, formatted)
+        let medianDiff = null;
+        let maxDiff = null;
+        let avgDiff = null;
+        if (timeDiffsInSeconds.length > 0) {
+          const sortedDiffs = [...timeDiffsInSeconds].sort((a, b) => a - b);
+          const mid = Math.floor(sortedDiffs.length / 2);
+          if (sortedDiffs.length % 2 === 0) {
+            medianDiff = Math.round(
+              (sortedDiffs[mid - 1] + sortedDiffs[mid]) / 2
+            );
+          } else {
+            medianDiff = sortedDiffs[mid];
+          }
+          maxDiff = Math.max(...timeDiffsInSeconds);
+          avgDiff = Math.round(
+            timeDiffsInSeconds.reduce((sum, t) => sum + t, 0) /
+              timeDiffsInSeconds.length
+          );
+        }
+
+        groupedResults[className] = {
+          numberOfStarts: classResults.length,
+          numberOfDNF: classResults.filter(
+            (item) =>
+              item.status === "Disqualified" || item.status === "DidNotFinish"
+          ).length,
+          maxTime: formatTime(maxTime),
+          minTime: formatTime(minTime),
+          avgTime: formatTime(Math.round(avgTime)),
+          medianTime: medianTime !== null ? formatTime(medianTime) : null,
+          medianDiff: medianDiff !== null ? formatTime(medianDiff) : null,
+          maxDiff: maxDiff !== null ? formatTime(maxDiff) : null,
+          avgDiff: avgDiff !== null ? formatTime(avgDiff) : null,
+        };
+      } else {
+        groupedResults[className] = {
+          numberOfStarts: classResults.length,
+          numberOfDNF: classResults.filter(
+            (item) =>
+              item.status === "Disqualified" || item.status === "DidNotFinish"
+          ).length,
+        };
+      }
+    });
+
+    // console.log(groupedResults);
+
     return {
-      event: {
-        eventId: item.eventId,
-        name: item.name,
-        organiserId: organisationId.map(organisationIdRemap),
-        startDate: new Date(item.startDate.date).toISOString(),
-        disciplineId: disciplineId[0],
-        classificationId: item.eventClassificationId,
-        distance: item.eventRace?.raceDistance,
-        lightConditions: item.eventRace?.raceLightCondition,
-        numberOfEntries: numberOfEntries,
-        numberOfStarts: numberOfStarts,
-        location: eventLocation,
-        punchingUnitType: item.punchingUnitType?.value,
-      },
-      classes,
-      entries,
-      results,
-      runners,
-      entryFees,
+      eventId: item.eventId,
+      name: item.name,
+      link: `https://eventor.orientering.no/Events/Show/${item.eventId}`,
+      startDate: new Date(item.startDate.date).toLocaleDateString("no-NO"),
+      distance: item.eventRace?.raceDistance,
+      lightConditions: item.eventRace?.raceLightCondition,
+      numberTTStarts: numberOfStarts,
+      ...groupedResults,
+      // classes,
+      // entries,
+
+      // results: groupedResults,
+      // runners,
+      // entryFees,
     };
   });
 };
