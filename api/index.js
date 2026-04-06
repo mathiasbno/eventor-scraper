@@ -20,18 +20,18 @@ async function updateEventsData() {
   const startDate = new Date();
   const endDate = new Date();
   startDate.setDate(endDate.getDate() - 7);
+  process.env.INTERNAL_API_PATH ??= `http://127.0.0.1:${process.env.PORT || 4000}/api`;
 
   console.log("Fetching new events", startDate, endDate);
   try {
-    const { fetchEventsAndInsert, fetchAndInsertOrgs } = await import(
-      "../src/process.js"
-    );
+    const { fetchEventsAndInsert, fetchAndInsertOrgs } =
+      await import("../src/process.js");
 
     await fetchAndInsertOrgs();
     await fetchEventsAndInsert(startDate, endDate, 7);
 
     console.log(
-      "Events update completed successfully: Events imported for the last 7 days"
+      "Events update completed successfully: Events imported for the last 7 days",
     );
     return true;
   } catch (error) {
@@ -49,7 +49,7 @@ cron.schedule(
   {
     scheduled: true,
     timezone: "Europe/Stockholm",
-  }
+  },
 );
 
 app.get("/api", (req, res) => {
@@ -173,10 +173,13 @@ app.get("/api/persons/organisations/:orgNumber", async (req, res) => {
 });
 
 app.get("/api/organisations", async (req, res) => {
+  console.log("Received request for all organisations");
   try {
+    console.log("Fetching organisations");
     const response = await eventorApi.organisations();
     res.json(response);
   } catch (error) {
+    console.error("Error fetching organisations:", error);
     res.status;
   }
 });

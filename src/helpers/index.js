@@ -1,4 +1,8 @@
 function ensureArray(item) {
+  if (item === undefined || item === null) {
+    return [];
+  }
+
   return Array.isArray(item) ? item : [item];
 }
 
@@ -48,10 +52,12 @@ export const filterAndMergeRunners = (data) => {
 
 export const formatRunners = (results, entries, event) => {
   const { eventForm } = event;
+  const normalizedResults = ensureArray(results).filter(Boolean);
+  const normalizedEntries = ensureArray(entries).filter(Boolean);
 
   if (eventForm === "RelaySingleDay") {
-    const items = results.length
-      ? results.flatMap((r) =>
+    const items = normalizedResults.length
+      ? normalizedResults.flatMap((r) =>
           ensureArray(r.teamResult).flatMap((team) =>
             ensureArray(team.teamMemberResult).map((member) => ({
               ...member,
@@ -59,54 +65,56 @@ export const formatRunners = (results, entries, event) => {
             }))
           )
         )
-      : ensureArray(entries).flatMap((item) =>
-          ensureArray(item.teamCompetitor)
-        );
+      : normalizedEntries.flatMap((item) => ensureArray(item.teamCompetitor));
 
     results = items
       .map((item) => {
         return {
           person: item?.person,
-          organisation: item?.organisationId,
+          organisation: item?.organisation || item?.organisationId,
         };
       })
       .filter((p) => Boolean(p.person));
   } else {
-    results = results.flatMap((item) =>
+    results = normalizedResults.flatMap((item) =>
       item.personResult ? ensureArray(item.personResult) : []
     );
   }
 
-  const data = results.map((item, index) => {
-    const fullName = `${item.person.personName.given._} ${item.person.personName.family}`;
+  const data = results
+    .filter((item) => Boolean(item?.person?.personName))
+    .map((item) => {
+      const fullName = `${item.person.personName.given._} ${item.person.personName.family}`;
 
-    const birthDate = item.person?.birthDate?.date
-      ? new Date(item.person.birthDate.date).toISOString()
-      : null;
+      const birthDate = item.person?.birthDate?.date
+        ? new Date(item.person.birthDate.date).toISOString()
+        : null;
 
-    const country = item.person.nationality?.country?.name
-      ? item.person.nationality.country.name[0]?._
-      : null;
+      const country = item.person.nationality?.country?.name
+        ? item.person.nationality.country.name[0]?._
+        : null;
 
-    const personId = `${item.person.personId}-${toCamelcase(fullName)}`;
+      const personId = `${item.person.personId}-${toCamelcase(fullName)}`;
 
-    return {
-      personId: personId,
-      gender: item.person.sex,
-      fullName: fullName,
-      birthDate: birthDate,
-      nationality: country,
-      organisationId: organisationIdRemap(item?.organisation?.organisationId),
-    };
-  });
+      return {
+        personId: personId,
+        gender: item.person.sex,
+        fullName: fullName,
+        birthDate: birthDate,
+        nationality: country,
+        organisationId: organisationIdRemap(item?.organisation?.organisationId),
+      };
+    });
 
   return filterUniqueByKey(data, "personId");
 };
 
 export const formatResults = (results, entries, event) => {
   const { eventId, eventForm, eventStatusId } = event;
+  const normalizedResults = ensureArray(results).filter(Boolean);
+  const normalizedEntries = ensureArray(entries).filter(Boolean);
 
-  const items = results.length ? results : ensureArray(entries);
+  const items = normalizedResults.length ? normalizedResults : normalizedEntries;
 
   const data = items.flatMap((item) => {
     const personResult = ensureArray(item.personResult).filter(Boolean);
@@ -153,6 +161,7 @@ export const formatResults = (results, entries, event) => {
       .map((person) => {
         // If the person did not start or is inactive we dont want to include them in the results
         if (
+          !person?.person?.personName ||
           person.result?.competitorStatus?.value === "DidNotStart" ||
           person.result?.competitorStatus?.value === "Inactive"
         ) {
@@ -187,14 +196,14 @@ export const formatResults = (results, entries, event) => {
 
 export const formatEntries = (_entries, event) => {
   const { eventId, eventForm } = event;
-  const entries = ensureArray(_entries);
+  const entries = ensureArray(_entries).filter(Boolean);
 
   const data = entries.flatMap((item) => {
     if (eventForm === "RelaySingleDay") {
       return ensureArray(item.teamCompetitor)
         .map((teamMember) => ({
           entryId: `${item.entryId}${teamMember?.person?.personId}`,
-          classId: item.entryClass.eventClassId,
+          classId: item.entryClass?.eventClassId,
           eventId: eventId,
           personId: teamMember?.person?.personId,
           date: new Date(event?.startDate?.date)?.toISOString(),
@@ -204,22 +213,26 @@ export const formatEntries = (_entries, event) => {
 
     return {
       entryId: item.entryId,
-      classId: item.entryClass.eventClassId,
+      classId: item.entryClass?.eventClassId,
       eventId: eventId,
       personId: item.competitor?.competitorId,
     };
   });
 
-  return removeDuplicates(data, "entryId");
+  return removeDuplicates(data.filter((item) => Boolean(item.entryId)), "entryId");
 };
 
 export const formatClasses = (results, entries, event) => {
   const { eventId } = event;
 
-  let items = results.map((item) => ({ ...item.eventClass }));
+  let items = ensureArray(results)
+    .filter(Boolean)
+    .map((item) => ({ ...item.eventClass }));
 
-  if (results.length === 0) {
-    items = ensureArray(entries).map((item) => ({ ...item.entryClass }));
+  if (items.length === 0) {
+    items = ensureArray(entries)
+      .filter(Boolean)
+      .map((item) => ({ ...item.entryClass }));
   }
 
   const data = items.map((item) => {
@@ -245,7 +258,7 @@ export const formatEntryFees = (entryFees, event) => {
     return name?.toLowerCase().includes("åpen") ? "open" : "normal";
   };
 
-  return entryFees.map((item) => ({
+  return ensureArray(entryFees).filter(Boolean).map((item) => ({
     eventId: eventId,
     entryFeeId: item.entryFeeId,
     name: item.name,
@@ -281,77 +294,84 @@ export const formatRaceData = (_results, _entries, _entryFees, event) => {
 export const formatEvents = (events) => {
   // TODO handle cancelled events, dont save competitors
   // item.eventStatusId === "10"
-  return events.map((item) => {
-    const { classes, entries, results, runners, entryFees } = formatRaceData(
-      item.results,
-      item.entries,
-      item.entryfees,
-      item
-    );
+  return ensureArray(events)
+    .filter(Boolean)
+    .map((item) => {
+      try {
+        const { classes, entries, results, runners, entryFees } =
+          formatRaceData(item.results, item.entries, item.entryfees, item);
 
-    let organisationId = ensureArray(
-      item.organiser.organisationId ||
-        item.organiser.organisation.organisationId
-    ).filter(Boolean);
+        const organiser = item.organiser || {};
+        let organisationId = ensureArray(
+          organiser.organisationId || organiser.organisation?.organisationId
+        ).filter(Boolean);
 
-    if (!organisationId.length && item.organiser.organisation.length) {
-      organisationId = item.organiser.organisation.map(
-        (org) => org.organisationId
-      );
-    }
+        if (!organisationId.length && Array.isArray(organiser.organisation)) {
+          organisationId = organiser.organisation
+            .map((org) => org?.organisationId)
+            .filter(Boolean);
+        }
 
-    const disciplineId = ensureArray(item.disciplineId);
-    const eventLocation = ensureArray(item.eventRace)[0]?.eventCenterPosition;
+        const disciplineId = ensureArray(item.disciplineId);
+        const eventLocation = ensureArray(item.eventRace)[0]?.eventCenterPosition;
+        const competitorCount = ensureArray(item.competiorCount);
 
-    let numberOfEntries =
-      item.competiorCount[0]?.numberOfEntries === "0"
-        ? entries.length
-        : parseInt(item.competiorCount[0]?.numberOfEntries || 0);
+        let numberOfEntries =
+          competitorCount[0]?.numberOfEntries === "0"
+            ? entries.length
+            : parseInt(competitorCount[0]?.numberOfEntries || 0);
 
-    let numberOfStarts =
-      item.competiorCount[0]?.numberOfStarts === "0"
-        ? results.length
-        : parseInt(item.competiorCount[0]?.numberOfStarts || 0);
+        let numberOfStarts =
+          competitorCount[0]?.numberOfStarts === "0"
+            ? results.length
+            : parseInt(competitorCount[0]?.numberOfStarts || 0);
 
-    // Make exceptions for relay events so we count the number of starts as
-    // personal starts and not team starts
-    if (item.eventForm === "RelaySingleDay") {
-      numberOfEntries = Math.max(numberOfEntries, entries.length);
-      numberOfStarts = Math.max(numberOfStarts, results.length);
-    }
+        // Make exceptions for relay events so we count the number of starts as
+        // personal starts and not team starts
+        if (item.eventForm === "RelaySingleDay") {
+          numberOfEntries = Math.max(numberOfEntries, entries.length);
+          numberOfStarts = Math.max(numberOfStarts, results.length);
+        }
 
-    // If we don't have any results or there are no registered starts on the event,
-    // we assume that it was at least as many starts as entries
-    if (numberOfStarts === 0) {
-      numberOfStarts = numberOfEntries;
-    }
+        // If we don't have any results or there are no registered starts on the event,
+        // we assume that it was at least as many starts as entries
+        if (numberOfStarts === 0) {
+          numberOfStarts = numberOfEntries;
+        }
 
-    return {
-      event: {
-        eventId: item.eventId,
-        name: item.name,
-        organiserId: organisationId.map(organisationIdRemap),
-        startDate: new Date(item.startDate.date).toISOString(),
-        disciplineId: disciplineId[0],
-        classificationId: item.eventClassificationId,
-        distance: item.eventRace?.raceDistance,
-        lightConditions: item.eventRace?.raceLightCondition,
-        numberOfEntries: numberOfEntries,
-        numberOfStarts: numberOfStarts,
-        location: eventLocation,
-        punchingUnitType: item.punchingUnitType?.value,
-      },
-      classes,
-      entries,
-      results,
-      runners,
-      entryFees,
-    };
-  });
+        return {
+          event: {
+            eventId: item.eventId,
+            name: item.name,
+            organiserId: organisationId.map(organisationIdRemap),
+            startDate: item.startDate?.date
+              ? new Date(item.startDate.date).toISOString()
+              : null,
+            disciplineId: disciplineId[0],
+            classificationId: item.eventClassificationId,
+            distance: item.eventRace?.raceDistance,
+            lightConditions: item.eventRace?.raceLightCondition,
+            numberOfEntries: numberOfEntries,
+            numberOfStarts: numberOfStarts,
+            location: eventLocation,
+            punchingUnitType: item.punchingUnitType?.value,
+          },
+          classes,
+          entries,
+          results,
+          runners,
+          entryFees,
+        };
+      } catch (error) {
+        console.error(`Error formatting event ${item?.eventId}:`, error);
+        return null;
+      }
+    })
+    .filter(Boolean);
 };
 
 export const formatOrganisations = (organisations) => {
-  return organisations.map((item) => {
+  return ensureArray(organisations).filter(Boolean).map((item) => {
     return {
       organisationId: item.organisationId,
       type: item.organisationTypeId,

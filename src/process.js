@@ -11,10 +11,36 @@ dotenv.config();
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY // Use service role key to avoid explicit auth
+  process.env.SUPABASE_SERVICE_ROLE_KEY, // Use service role key to avoid explicit auth
 );
 
 const blackListedOrganisations = ["3591"];
+const defaultRequestTimeoutMs = Number(process.env.FETCH_TIMEOUT_MS || 45000);
+
+const getApiBasePath = () => {
+  const apiBasePath = process.env.INTERNAL_API_PATH || process.env.API_PATH;
+
+  if (!apiBasePath) {
+    throw new Error(
+      "Missing API_PATH or INTERNAL_API_PATH environment variable",
+    );
+  }
+
+  return apiBasePath.replace(/\/$/, "");
+};
+
+const getApiUrl = (path) => `${getApiBasePath()}${path}`;
+
+const withRequestTimeout = (options = {}) => {
+  if (options.signal || typeof AbortSignal?.timeout !== "function") {
+    return options;
+  }
+
+  return {
+    ...options,
+    signal: AbortSignal.timeout(defaultRequestTimeoutMs),
+  };
+};
 
 const nukeDate = async () => {
   const { data: eventsData } = await supabase
@@ -53,54 +79,52 @@ const nukeDate = async () => {
 };
 
 const fetchPersonsForOrg = async (orgId) => {
-  return await fetch(`${process.env.API_PATH}/persons/organisations/${orgId}`)
-    .then((response) => response.json())
-    .then((persons) => persons)
-    .catch((err) => console.error(err));
+  try {
+    return await fetchWithRetry(getApiUrl(`/persons/organisations/${orgId}`));
+  } catch (err) {
+    console.error(`Error fetching persons for organisation ${orgId}:`, err);
+    return [];
+  }
 };
 
 const fetchOrgs = async () => {
-  return await fetch(`${process.env.API_PATH}/organisations`)
-    .then((response) => response.json())
-    .then((orgs) => orgs)
-    .catch((err) => console.error(err));
+  try {
+    return await fetchWithRetry(getApiUrl("/organisations"));
+  } catch (err) {
+    console.error("Error fetching organisations:", err);
+    return [];
+  }
 };
 
 const fetchEvent = async (id) => {
-  return await fetch(`${process.env.API_PATH}/event/${id}`)
-    .then((response) => response.json())
-    .then(async (_event) => {
-      const event = _event[0];
-      const [competiorCount, eventResults, eventEntries, eventEntryfees] =
-        await Promise.all([
-          fetchWithRetry(
-            `${process.env.API_PATH}/competitorcount/${event.eventId}`
-          ),
-          fetchWithRetry(`${process.env.API_PATH}/results/${event.eventId}`),
-          fetchWithRetry(`${process.env.API_PATH}/entries/${event.eventId}`),
-          fetchWithRetry(`${process.env.API_PATH}/entryfees/${event.eventId}`),
-        ]);
-      event.competiorCount = competiorCount;
-      event.results = eventResults;
-      event.entries = eventEntries;
-      event.entryfees = eventEntryfees;
+  try {
+    const _event = await fetchWithRetry(getApiUrl(`/event/${id}`));
+    const event = _event[0];
 
-      return event;
-    })
-    .catch((err) => console.error(err));
+    if (!event) {
+      return null;
+    }
+
+    return await enrichEvent(event);
+  } catch (err) {
+    console.error(`Error fetching event ${id}:`, err);
+    return null;
+  }
 };
 
 const fetchEntryFees = async (id) => {
-  return await fetch(`${process.env.API_PATH}/entryfees/${id}`)
-    .then((response) => response.json())
-    .then((event) => console.log(event))
-    .catch((err) => console.error(err));
+  try {
+    return await fetchWithRetry(getApiUrl(`/entryfees/${id}`));
+  } catch (err) {
+    console.error(`Error fetching entry fees for event ${id}:`, err);
+    return [];
+  }
 };
 
 const mergeDuplicateRunners = async (
   step = 1,
   yearStart = 2011,
-  yearEnd = new Date().getFullYear()
+  yearEnd = new Date().getFullYear(),
 ) => {
   let year = yearStart;
 
@@ -128,7 +152,7 @@ const removeRunnersWithoutResult = async () => {
 const fetchWithRetry = async (url, options = {}, retries = 3) => {
   for (let i = 0; i < retries; i++) {
     try {
-      const response = await fetch(url, options);
+      const response = await fetch(url, withRequestTimeout(options));
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -138,60 +162,87 @@ const fetchWithRetry = async (url, options = {}, retries = 3) => {
       if (i === retries - 1) {
         throw err;
       }
-      console.warn(`Retrying fetch for ${url} (${i + 1}/${retries})`);
+      console.warn(
+        `Retrying fetch for ${url} (${i + 1}/${retries})`,
+        err.message,
+      );
     }
   }
+};
+
+const fetchWithFallback = async (url, fallback, label) => {
+  try {
+    return await fetchWithRetry(url);
+  } catch (error) {
+    console.error(`Error fetching ${label}:`, error);
+    return fallback;
+  }
+};
+
+const enrichEvent = async (event) => {
+  if (!event?.eventId) {
+    return event;
+  }
+
+  const eventId = event.eventId;
+  const [competiorCount, results, entries, entryfees] = await Promise.all([
+    fetchWithFallback(
+      getApiUrl(`/competitorcount/${eventId}`),
+      [],
+      `competitor count for event ${eventId}`,
+    ),
+    fetchWithFallback(
+      getApiUrl(`/results/${eventId}`),
+      [],
+      `results for event ${eventId}`,
+    ),
+    fetchWithFallback(
+      getApiUrl(`/entries/${eventId}`),
+      [],
+      `entries for event ${eventId}`,
+    ),
+    fetchWithFallback(
+      getApiUrl(`/entryfees/${eventId}`),
+      [],
+      `entry fees for event ${eventId}`,
+    ),
+  ]);
+
+  return {
+    ...event,
+    competiorCount,
+    results,
+    entries,
+    entryfees,
+  };
 };
 
 const fetchEvents = async (options) => {
   const params = new URLSearchParams(options);
   try {
-    const events = await fetchWithRetry(
-      `${process.env.API_PATH}/events?${params}`
-    );
+    const events = await fetchWithRetry(getApiUrl(`/events?${params}`));
+    const eventList = Array.isArray(events) ? events : [];
 
-    return Promise.all(
-      events
-        .filter((item) =>
-          ["0", "1", "2", "3", "4"].includes(item.eventClassificationId)
-        )
-        .map(async (event) => {
-          try {
-            const [competiorCount, eventResults, eventEntries, eventEntryfees] =
-              await Promise.all([
-                fetchWithRetry(
-                  `${process.env.API_PATH}/competitorcount/${event.eventId}`
-                ),
-                fetchWithRetry(
-                  `${process.env.API_PATH}/results/${event.eventId}`
-                ),
-                fetchWithRetry(
-                  `${process.env.API_PATH}/entries/${event.eventId}`
-                ),
-                fetchWithRetry(
-                  `${process.env.API_PATH}/entryfees/${event.eventId}`
-                ),
-              ]);
-
-            event.competiorCount = competiorCount;
-            event.results = eventResults;
-            event.entries = eventEntries;
-            event.entryfees = eventEntryfees;
-          } catch (err) {
-            console.error(
-              `Error fetching data for event ${event.eventId}:`,
-              err
-            );
-          }
-          return event;
-        })
-    );
+    return (
+      await Promise.all(
+        eventList
+          .filter((item) =>
+            ["0", "1", "2", "3", "4"].includes(item.eventClassificationId),
+          )
+          .map((event) => enrichEvent(event)),
+      )
+    ).filter(Boolean);
   } catch (err) {
     console.error("Error fetching events:", err);
+    return [];
   }
 };
 
 const batchInsert = async (data, table, options, batchSize = 1000) => {
+  if (!Array.isArray(data) || data.length === 0) {
+    return { data: [], error: null };
+  }
+
   const insertedData = [];
   let error = null;
 
@@ -199,7 +250,7 @@ const batchInsert = async (data, table, options, batchSize = 1000) => {
     const batch = data.slice(i, i + batchSize);
 
     console.log(
-      `Processing batch ${Math.ceil(i / batchSize) + 1} of ${table}...`
+      `Processing batch ${Math.ceil(i / batchSize) + 1}/${Math.ceil(data.length / batchSize)} of ${table}...`,
     );
 
     const { data: batchData, error: batchError } = await supabase
@@ -209,6 +260,7 @@ const batchInsert = async (data, table, options, batchSize = 1000) => {
 
     if (batchError) {
       error = batchError;
+      console.error(`Error inserting batch into ${table}:`, batchError);
     }
 
     if (batchData) {
@@ -221,12 +273,21 @@ const batchInsert = async (data, table, options, batchSize = 1000) => {
 
 export const fetchAndInsertOrgs = async () => {
   const organisations = await fetchOrgs();
+
+  if (!organisations.length) {
+    console.warn("No organisations fetched");
+    return;
+  }
+
   const formattedOrganisations = formatOrganisations(organisations);
 
-  const { data, error } = await supabase
-    .from("organisations")
-    .upsert(formattedOrganisations, { onConflict: "organisationId" })
-    .select();
+  const { data, error } = await batchInsert(
+    formattedOrganisations,
+    "organisations",
+    {
+      onConflict: "organisationId",
+    },
+  );
 
   if (error) {
     console.error("Error inserting organisations:", error);
@@ -243,7 +304,7 @@ const insertData = async (formattedEvents, startDate, toDate) => {
     {
       onConflict: "eventId",
       ignoreDuplicates: false,
-    }
+    },
   );
 
   const { data: classesData, error: classesError } = await batchInsert(
@@ -252,7 +313,7 @@ const insertData = async (formattedEvents, startDate, toDate) => {
     {
       onConflict: "classId",
       ignoreDuplicates: false,
-    }
+    },
   );
 
   const { data: runnersData, error: runnersError } = await batchInsert(
@@ -261,7 +322,7 @@ const insertData = async (formattedEvents, startDate, toDate) => {
     {
       onConflict: "personId",
       ignoreDuplicates: false,
-    }
+    },
   );
 
   const { data: resultsData, error: resultsError } = await batchInsert(
@@ -270,7 +331,7 @@ const insertData = async (formattedEvents, startDate, toDate) => {
     {
       onConflict: "resultId",
       ignoreDuplicates: false,
-    }
+    },
   );
 
   const { data: entriesData, error: entriesError } = await supabase
@@ -280,7 +341,7 @@ const insertData = async (formattedEvents, startDate, toDate) => {
       {
         onConflict: "entryId",
         ignoreDuplicates: false,
-      }
+      },
     )
     .select();
   const { data: entryFeesData, error: entryFeesError } = await supabase
@@ -290,7 +351,7 @@ const insertData = async (formattedEvents, startDate, toDate) => {
       {
         onConflict: "entryFeeId",
         ignoreDuplicates: true,
-      }
+      },
     )
     .select();
 
@@ -347,7 +408,7 @@ export const fetchEventsAndInsert = async (
   _startDate,
   _endDate,
   granularity = 15,
-  dryrun = false
+  dryrun = false,
 ) => {
   let startDate = new Date(_startDate);
   startDate.setHours(0, 0, 0, 0);
@@ -369,20 +430,31 @@ export const fetchEventsAndInsert = async (
       fromDate: startDate.toISOString(),
       toDate: toDate.toISOString(),
     };
+    const fetchTimerLabel = `fetch ${options.fromDate} -> ${options.toDate}`;
+    const formatTimerLabel = `format ${options.fromDate} -> ${options.toDate}`;
+    let events = [];
+    let formattedEvents = [];
 
     console.log(">>>> START");
-    console.time("fetch");
-    const events = await fetchEvents(options);
-    console.timeEnd("fetch");
-    console.time("format");
-    let formattedEvents = formatEvents(events);
-    formattedEvents = formattedEvents.filter(
-      (item) =>
-        !item.event.organiserId.some((r) =>
-          blackListedOrganisations.includes(r)
-        )
-    );
-    console.timeEnd("format");
+    console.time(fetchTimerLabel);
+    try {
+      events = await fetchEvents(options);
+    } finally {
+      console.timeEnd(fetchTimerLabel);
+    }
+
+    console.time(formatTimerLabel);
+    try {
+      formattedEvents = formatEvents(events);
+      formattedEvents = formattedEvents.filter(
+        (item) =>
+          !item.event.organiserId.some((r) =>
+            blackListedOrganisations.includes(r),
+          ),
+      );
+    } finally {
+      console.timeEnd(formatTimerLabel);
+    }
 
     if (!dryrun) {
       console.time("insert");
@@ -400,7 +472,7 @@ export const fetchEventsAndInsert = async (
               item.fullName === "" ||
               item.fullName === null ||
               item.fullName === undefined ||
-              item.fullName.includes("undefined")
+              item.fullName.includes("undefined"),
           ),
         formattedEvents
           .flatMap((item) => item.results)
@@ -409,40 +481,40 @@ export const fetchEventsAndInsert = async (
               item.personId === "" ||
               item.personId === null ||
               item.personId === undefined ||
-              item.personId.includes("undefined")
-          )
+              item.personId.includes("undefined"),
+          ),
       );
       console.log(`from ${startDate} to ${toDate}`);
       console.log("------------------------------------");
       console.log(
         `Fetched ${
           formattedEvents.flatMap((item) => item.event)?.length
-        } events`
+        } events`,
       );
       console.log(
         `Fetched ${
           formattedEvents.flatMap((item) => item.classes)?.length
-        } classes`
+        } classes`,
       );
       console.log(
         `Fetched ${
           formattedEvents.flatMap((item) => item.runners)?.length
-        } runners`
+        } runners`,
       );
       console.log(
         `Fetched ${
           formattedEvents.flatMap((item) => item.results)?.length
-        } results`
+        } results`,
       );
       console.log(
         `Fetched ${
           formattedEvents.flatMap((item) => item.entries)?.length
-        } entries`
+        } entries`,
       );
       console.log(
         `Fetched ${
           formattedEvents.flatMap((item) => item.entryFees)?.length
-        } entry fees`
+        } entry fees`,
       );
       console.log(">>>> END");
     }
