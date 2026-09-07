@@ -6,10 +6,6 @@
     "startDate": "9.5.2026",
     "distance": "Sprint",
     "numberTTStarts": 173,
-    "N2-åpen 9-16": {
-      "numberOfStarts": 1,
-      "numberOfDNF": 0
-    },
     "D 11-12": {
       "numberOfStarts": 5,
       "numberOfDNF": 0,
@@ -79,22 +75,10 @@
   },
   {
     "eventId": "22566",
-    "name": "Nydalten",
+    "name": "Nydalten prolog",
     "link": "https://eventor.orientering.no/Events/Show/22566",
     "startDate": "10.5.2026",
-    "numberTTStarts": 596,
-    "N2-åpen 9-16": {
-      "numberOfStarts": 8,
-      "numberOfDNF": 0
-    },
-    "C-åpen 10-16": {
-      "numberOfStarts": 5,
-      "numberOfDNF": 0
-    },
-    "B-åpen 13-16": {
-      "numberOfStarts": 5,
-      "numberOfDNF": 0
-    },
+    "numberTTStarts": null,
     "D 11-12": {
       "numberOfStarts": 10,
       "numberOfDNF": 0,
@@ -160,8 +144,15 @@
       "medianDiff": "00:01:03",
       "maxDiff": "00:09:09",
       "avgDiff": "00:01:55"
-    },
-    "D 15-16 jaktstart": {
+    }
+  },
+  {
+    "eventId": "22566",
+    "name": "Nydalten jaktstart",
+    "link": "https://eventor.orientering.no/Events/Show/22566",
+    "startDate": "10.5.2026",
+    "numberTTStarts": 596,
+    "D 15-16": {
       "numberOfStarts": 20,
       "numberOfDNF": 0,
       "maxTime": "01:23:01",
@@ -172,7 +163,7 @@
       "maxDiff": "00:54:42",
       "avgDiff": "00:13:55"
     },
-    "H 15-16 jaktstart": {
+    "H 15-16": {
       "numberOfStarts": 23,
       "numberOfDNF": 1,
       "maxTime": "00:59:06",
@@ -183,7 +174,7 @@
       "maxDiff": "00:32:32",
       "avgDiff": "00:10:57"
     },
-    "D 13-14 jatkstart": {
+    "D 13-14": {
       "numberOfStarts": 18,
       "numberOfDNF": 1,
       "maxTime": "01:17:47",
@@ -194,7 +185,7 @@
       "maxDiff": "00:19:46",
       "avgDiff": "00:09:26"
     },
-    "H 13-14 jaktstart": {
+    "H 13-14": {
       "numberOfStarts": 22,
       "numberOfDNF": 0,
       "maxTime": "01:16:38",
@@ -212,18 +203,6 @@
     "link": "https://eventor.orientering.no/Events/Show/22526",
     "startDate": "16.5.2026",
     "numberTTStarts": 240,
-    "N1-åpen -16": {
-      "numberOfStarts": 60,
-      "numberOfDNF": 0
-    },
-    "C-åpen 10-16": {
-      "numberOfStarts": 8,
-      "numberOfDNF": 0
-    },
-    "B-åpen 10-16": {
-      "numberOfStarts": 5,
-      "numberOfDNF": 0
-    },
     "D 11-12": {
       "numberOfStarts": 22,
       "numberOfDNF": 0,
@@ -297,10 +276,6 @@
     "link": "https://eventor.orientering.no/Events/Show/22587",
     "startDate": "30.5.2026",
     "numberTTStarts": 247,
-    "B-åpen 10-16": {
-      "numberOfStarts": 2,
-      "numberOfDNF": 0
-    },
     "D 11-12": {
       "numberOfStarts": 6,
       "numberOfDNF": 0,
@@ -375,18 +350,6 @@
     "startDate": "31.5.2026",
     "distance": "Long",
     "numberTTStarts": 424,
-    "N2-åpen 9-16": {
-      "numberOfStarts": 10,
-      "numberOfDNF": 0
-    },
-    "C-åpen 10-16": {
-      "numberOfStarts": 6,
-      "numberOfDNF": 0
-    },
-    "B-åpen 10-16": {
-      "numberOfStarts": 3,
-      "numberOfDNF": 0
-    },
     "D 11-12": {
       "numberOfStarts": 11,
       "numberOfDNF": 0,
@@ -460,18 +423,6 @@
     "link": "https://eventor.orientering.no/Events/Show/22565",
     "startDate": "16.8.2026",
     "numberTTStarts": 121,
-    "N2-åpen 9-16": {
-      "numberOfStarts": 13,
-      "numberOfDNF": 0
-    },
-    "C-åpen 10-16": {
-      "numberOfStarts": 5,
-      "numberOfDNF": 0
-    },
-    "B-åpen 10-16": {
-      "numberOfStarts": 3,
-      "numberOfDNF": 0
-    },
     "D 11-12": {
       "numberOfStarts": 9,
       "numberOfDNF": 0,
@@ -545,18 +496,6 @@
     "link": "https://eventor.orientering.no/Events/Show/22525",
     "startDate": "23.8.2026",
     "numberTTStarts": 316,
-    "N2-åpen 9-16": {
-      "numberOfStarts": 2,
-      "numberOfDNF": 0
-    },
-    "C-åpen 10-16": {
-      "numberOfStarts": 3,
-      "numberOfDNF": 0
-    },
-    "B-åpen 10-16": {
-      "numberOfStarts": 1,
-      "numberOfDNF": 0
-    },
     "D 11-12": {
       "numberOfStarts": 15,
       "numberOfDNF": 0,
@@ -631,18 +570,6 @@
     "startDate": "29.8.2026",
     "distance": "Long",
     "numberTTStarts": 338,
-    "N2-åpen 9-16": {
-      "numberOfStarts": 4,
-      "numberOfDNF": 0
-    },
-    "C-åpen 10-16": {
-      "numberOfStarts": 6,
-      "numberOfDNF": 0
-    },
-    "B-åpen 10-16": {
-      "numberOfStarts": 1,
-      "numberOfDNF": 0
-    },
     "D 11-12": {
       "numberOfStarts": 9,
       "numberOfDNF": 0,
@@ -708,28 +635,6 @@
       "medianDiff": "00:15:15",
       "maxDiff": "00:46:38",
       "avgDiff": "00:19:36"
-    },
-    "A H15-16 løype": {
-      "numberOfStarts": 1,
-      "numberOfDNF": 0,
-      "maxTime": "01:35:04",
-      "minTime": "01:35:04",
-      "avgTime": "01:35:04",
-      "medianTime": "01:35:04",
-      "medianDiff": "00:00:00",
-      "maxDiff": "00:00:00",
-      "avgDiff": "00:00:00"
-    },
-    "AM H13-14 løype": {
-      "numberOfStarts": 1,
-      "numberOfDNF": 0,
-      "maxTime": "00:38:19",
-      "minTime": "00:38:19",
-      "avgTime": "00:38:19",
-      "medianTime": "00:38:19",
-      "medianDiff": "00:00:00",
-      "maxDiff": "00:00:00",
-      "avgDiff": "00:00:00"
     }
   },
   {
@@ -738,7 +643,7 @@
     "link": "https://eventor.orientering.no/Events/Show/22731",
     "startDate": "6.9.2026",
     "numberTTStarts": 72,
-    "D13-14": {
+    "D 13-14": {
       "numberOfStarts": 12,
       "numberOfDNF": 0,
       "maxTime": "00:59:10",
@@ -749,7 +654,7 @@
       "maxDiff": "00:32:06",
       "avgDiff": "00:07:16"
     },
-    "D15-16": {
+    "D 15-16": {
       "numberOfStarts": 20,
       "numberOfDNF": 1,
       "maxTime": "00:45:56",
@@ -760,7 +665,7 @@
       "maxDiff": "00:13:51",
       "avgDiff": "00:05:01"
     },
-    "H13-14": {
+    "H 13-14": {
       "numberOfStarts": 14,
       "numberOfDNF": 0,
       "maxTime": "01:14:25",
@@ -771,7 +676,7 @@
       "maxDiff": "00:28:08",
       "avgDiff": "00:07:25"
     },
-    "H15-16": {
+    "H 15-16": {
       "numberOfStarts": 27,
       "numberOfDNF": 0,
       "maxTime": "01:00:49",

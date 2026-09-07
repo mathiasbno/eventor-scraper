@@ -31,6 +31,37 @@ const computeMedian = (sortedArr) => {
     : sortedArr[mid];
 };
 
+// ─── Class name normalisation ────────────────────────────────────────────────
+// Only the TrimTex classes count; åpen/N/C/B and stray "løype" classes are
+// dropped. Handles "D13-14" (no space) and the "jatkstart" typo seen in Eventor.
+const CLASS_RE = /^([DH])\s?(11-12|13-14|15-16)(\s+ja[kt]+start)?$/i;
+
+const normalizeClassName = (name = "") => {
+  const m = name.trim().match(CLASS_RE);
+  if (!m) return null;
+  return `${m[1].toUpperCase()} ${m[2]}${m[3] ? " jaktstart" : ""}`;
+};
+
+// An event that has both "D 13-14" and "D 13-14 jaktstart" is a prolog +
+// jaktstart on the same day. Split it into two rows; the prolog row drops
+// numberTTStarts so the event total is not counted twice.
+const splitJaktstart = (base, grouped) => {
+  const entries = Object.entries(grouped);
+  const jakt = entries.filter(([k]) => k.endsWith(" jaktstart"));
+  if (!jakt.length) return [{ ...base, ...grouped }];
+
+  const prolog = Object.fromEntries(
+    entries.filter(([k]) => !k.endsWith(" jaktstart")),
+  );
+  const jaktstart = Object.fromEntries(
+    jakt.map(([k, v]) => [k.replace(" jaktstart", ""), v]),
+  );
+  return [
+    { ...base, name: `${base.name} prolog`, numberTTStarts: null, ...prolog },
+    { ...base, name: `${base.name} jaktstart`, ...jaktstart },
+  ];
+};
+
 // ─── Exports ─────────────────────────────────────────────────────────────────
 
 /**
@@ -46,7 +77,8 @@ const computeMedian = (sortedArr) => {
  */
 export const computeGroupedResults = (results) => {
   const grouped = results.reduce((acc, result) => {
-    const { className } = result;
+    const className = normalizeClassName(result.className);
+    if (!className) return acc;
     if (!acc[className]) {
       acc[className] = [];
     }
@@ -129,10 +161,10 @@ export const computeGroupedResults = (results) => {
  *   }
  */
 export const formatYouthEvents = (events) => {
-  return formatEvents(events).map((item) => {
+  return formatEvents(events).flatMap((item) => {
     const groupedResults = computeGroupedResults(item.results);
 
-    return {
+    const base = {
       eventId: item.event.eventId,
       name: item.event.name,
       link: `https://eventor.orientering.no/Events/Show/${item.event.eventId}`,
@@ -142,7 +174,7 @@ export const formatYouthEvents = (events) => {
       distance: item.event.distance,
       lightConditions: item.event.lightConditions,
       numberTTStarts: item.event.numberOfStarts,
-      ...groupedResults,
     };
+    return splitJaktstart(base, groupedResults);
   });
 };
