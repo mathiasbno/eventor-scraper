@@ -25,6 +25,7 @@ jobs:
       - name: Deploy to VPS
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
+            set -e
             cd ~/eventor-scraper/eventor-scraper
             git pull
 
