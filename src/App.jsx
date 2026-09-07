@@ -14,6 +14,7 @@ import { EventsChart } from "./components/graphs/EventsChart";
 import { ClubsLeaderboard } from "./components/leaderboards/ClubsLeaderboard";
 import { DistrictsLeaderboard } from "./components/leaderboards/DistrictsLeaderboard";
 import { EventsByClubsLeaderboard } from "./components/leaderboards/EventsByClubsLeaderboard";
+import { BiggestEventsLeaderboard } from "./components/leaderboards/BiggestEventsLeaderboard";
 
 import { PageConfig } from "./components/PageConfig";
 import { Disclaimer } from "./components/Disclaimer";
@@ -67,6 +68,7 @@ function App() {
               <ClubsLeaderboard filter={filter} />
               <EventsByClubsLeaderboard filter={filter} />
               <DistrictsLeaderboard filter={filter} />
+              <BiggestEventsLeaderboard filter={filter} />
               <EventSearch filter={filter} />
               <EventsMap filter={filter} />
             </>
