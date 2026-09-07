@@ -98,22 +98,25 @@ export const computeGroupedResults = (results) => {
   }, {});
 
   Object.keys(grouped).forEach((className) => {
-    const classResults = grouped[className];
+    // Only ranked (OK) runners have comparable times; MisPunch rows carry a
+    // time but no position, and would otherwise skew min/max/avg.
+    const started = grouped[className].filter(
+      (r) => r.status !== "DidNotStart",
+    );
+    const ranked = started.filter((r) => r.status === "OK");
+    const classResults = started;
 
-    const timesInSeconds = classResults
+    const timesInSeconds = ranked
       .map((r) => r.time)
       .filter(Boolean)
       .map(timeStringToSeconds);
 
-    const timeDiffsInSeconds = classResults
+    const timeDiffsInSeconds = ranked
       .map((r) => r.timeDiff)
       .filter(Boolean)
       .map(timeStringToSeconds);
 
-    const numberOfDNF = classResults.filter(
-      (item) =>
-        item.status === "Disqualified" || item.status === "DidNotFinish",
-    ).length;
+    const numberOfDNF = started.length - ranked.length;
 
     if (timesInSeconds.length > 0) {
       const sortedTimes = [...timesInSeconds].sort((a, b) => a - b);
