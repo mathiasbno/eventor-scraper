@@ -42,13 +42,19 @@ const normalizeClassName = (name = "") => {
   return `${m[1].toUpperCase()} ${m[2]}${m[3] ? " jaktstart" : ""}`;
 };
 
+const TT_CLASSES = ["D 13-14", "D 15-16", "H 13-14", "H 15-16"];
+const countTTStarts = (grouped) =>
+  TT_CLASSES.reduce((sum, k) => sum + (grouped[k]?.numberOfStarts || 0), 0);
+
 // An event that has both "D 13-14" and "D 13-14 jaktstart" is a prolog +
 // jaktstart on the same day. Split it into two rows; the prolog row drops
-// numberTTStarts so the event total is not counted twice.
+// numberTTStarts so the same runners are not counted twice.
 const splitJaktstart = (base, grouped) => {
   const entries = Object.entries(grouped);
   const jakt = entries.filter(([k]) => k.endsWith(" jaktstart"));
-  if (!jakt.length) return [{ ...base, ...grouped }];
+  if (!jakt.length) {
+    return [{ ...base, numberTTStarts: countTTStarts(grouped), ...grouped }];
+  }
 
   const prolog = Object.fromEntries(
     entries.filter(([k]) => !k.endsWith(" jaktstart")),
@@ -58,7 +64,12 @@ const splitJaktstart = (base, grouped) => {
   );
   return [
     { ...base, name: `${base.name} prolog`, numberTTStarts: null, ...prolog },
-    { ...base, name: `${base.name} jaktstart`, ...jaktstart },
+    {
+      ...base,
+      name: `${base.name} jaktstart`,
+      numberTTStarts: countTTStarts(jaktstart),
+      ...jaktstart,
+    },
   ];
 };
 
@@ -173,7 +184,6 @@ export const formatYouthEvents = (events) => {
         : null,
       distance: item.event.distance,
       lightConditions: item.event.lightConditions,
-      numberTTStarts: item.event.numberOfStarts,
     };
     return splitJaktstart(base, groupedResults);
   });
