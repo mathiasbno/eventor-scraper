@@ -8,6 +8,7 @@
     "server": "node api/index.js",
     "start": "node api/index.js",
     "process": "node src/process.js",
+    "processYouth": "node src/processYouth.js",
     "build": "vite build"
   },
   "devDependencies": {

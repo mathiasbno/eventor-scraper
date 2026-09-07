@@ -43,7 +43,7 @@ export const filterAndMergeRunners = (data) => {
     .filter((item, index, self) =>
       item.personId
         ? index === self.findIndex((t) => t.personId === item.personId)
-        : true
+        : true,
     )
     .sort((a, b) => a.personId - b.personId);
 
@@ -62,8 +62,8 @@ export const formatRunners = (results, entries, event) => {
             ensureArray(team.teamMemberResult).map((member) => ({
               ...member,
               organisation: team.organisation,
-            }))
-          )
+            })),
+          ),
         )
       : normalizedEntries.flatMap((item) => ensureArray(item.teamCompetitor));
 
@@ -77,7 +77,7 @@ export const formatRunners = (results, entries, event) => {
       .filter((p) => Boolean(p.person));
   } else {
     results = normalizedResults.flatMap((item) =>
-      item.personResult ? ensureArray(item.personResult) : []
+      item.personResult ? ensureArray(item.personResult) : [],
     );
   }
 
@@ -114,12 +114,14 @@ export const formatResults = (results, entries, event) => {
   const normalizedResults = ensureArray(results).filter(Boolean);
   const normalizedEntries = ensureArray(entries).filter(Boolean);
 
-  const items = normalizedResults.length ? normalizedResults : normalizedEntries;
+  const items = normalizedResults.length
+    ? normalizedResults
+    : normalizedEntries;
 
   const data = items.flatMap((item) => {
     const personResult = ensureArray(item.personResult).filter(Boolean);
     const teamCompetitor = ensureArray(item.teamCompetitor).filter((p) =>
-      Boolean(p?.person)
+      Boolean(p?.person),
     );
     const teamResult = ensureArray(item?.teamResult)
       .flatMap((team) => ensureArray(team?.teamMemberResult))
@@ -177,7 +179,7 @@ export const formatResults = (results, entries, event) => {
           `${eventId}${person.bibNumber}${personId}`;
 
         const isInClassList = ["11", "12", "13", "14", "15", "16"].some(
-          (term) => item.eventClass?.name.includes(term)
+          (term) => item.eventClass?.name.includes(term),
         );
 
         if (!isInClassList) {
@@ -206,7 +208,7 @@ export const formatResults = (results, entries, event) => {
 
   return filterUniqueByKey(
     data.filter((item) => Boolean(item?.personId)),
-    "resultId"
+    "resultId",
   );
 };
 
@@ -235,7 +237,10 @@ export const formatEntries = (_entries, event) => {
     };
   });
 
-  return removeDuplicates(data.filter((item) => Boolean(item.entryId)), "entryId");
+  return removeDuplicates(
+    data.filter((item) => Boolean(item.entryId)),
+    "entryId",
+  );
 };
 
 export const formatClasses = (results, entries, event) => {
@@ -274,16 +279,18 @@ export const formatEntryFees = (entryFees, event) => {
     return name?.toLowerCase().includes("åpen") ? "open" : "normal";
   };
 
-  return ensureArray(entryFees).filter(Boolean).map((item) => ({
-    eventId: eventId,
-    entryFeeId: item.entryFeeId,
-    name: item.name,
-    amount: parseInt(item.amount._),
-    type: item.type === "elite" ? estimateEntryFeeType(item.name) : item.type,
-    valueOperator: item?.valueOperator,
-    order: estimateOrder(item.name),
-    classType: estimateClassType(item.name),
-  }));
+  return ensureArray(entryFees)
+    .filter(Boolean)
+    .map((item) => ({
+      eventId: eventId,
+      entryFeeId: item.entryFeeId,
+      name: item.name,
+      amount: parseInt(item.amount._),
+      type: item.type === "elite" ? estimateEntryFeeType(item.name) : item.type,
+      valueOperator: item?.valueOperator,
+      order: estimateOrder(item.name),
+      classType: estimateClassType(item.name),
+    }));
 };
 
 export const formatRaceData = (_results, _entries, _entryFees, event) => {
@@ -299,7 +306,7 @@ export const formatRaceData = (_results, _entries, _entryFees, event) => {
   const validClassIds = new Set(classes.map((cls) => cls.classId));
   const entries = formatEntries(_entries, event).filter(
     (item) =>
-      validClassIds.has(item.classId) && validPersonIds.has(item.personId)
+      validClassIds.has(item.classId) && validPersonIds.has(item.personId),
   );
 
   const results = formatResults(_results, _entries, event);
@@ -319,7 +326,7 @@ export const formatEvents = (events) => {
 
         const organiser = item.organiser || {};
         let organisationId = ensureArray(
-          organiser.organisationId || organiser.organisation?.organisationId
+          organiser.organisationId || organiser.organisation?.organisationId,
         ).filter(Boolean);
 
         if (!organisationId.length && Array.isArray(organiser.organisation)) {
@@ -329,7 +336,8 @@ export const formatEvents = (events) => {
         }
 
         const disciplineId = ensureArray(item.disciplineId);
-        const eventLocation = ensureArray(item.eventRace)[0]?.eventCenterPosition;
+        const eventLocation = ensureArray(item.eventRace)[0]
+          ?.eventCenterPosition;
         const competitorCount = ensureArray(item.competiorCount);
 
         let numberOfEntries =
@@ -355,192 +363,51 @@ export const formatEvents = (events) => {
           numberOfStarts = numberOfEntries;
         }
 
-    // Group results by className
-    const groupedResults = results.reduce((acc, result) => {
-      const { className } = result;
+        const event = {
+          eventId: item.eventId,
+          name: item.name,
+          organiserId: organisationId.map(organisationIdRemap),
+          startDate: item.startDate?.date
+            ? new Date(item.startDate.date).toISOString()
+            : null,
+          disciplineId: disciplineId[0],
+          classificationId: item.eventClassificationId,
+          distance: item.eventRace?.raceDistance,
+          lightConditions: item.eventRace?.raceLightCondition,
+          numberOfEntries: numberOfEntries,
+          numberOfStarts: numberOfStarts,
+          location: eventLocation,
+          punchingUnitType: item.punchingUnitType?.value,
+        };
 
-      if (!acc[className]) {
-        acc[className] = [];
+        return {
+          event,
+          classes,
+          entries,
+          results,
+          runners,
+          entryFees,
+        };
+      } catch (error) {
+        console.error(`Error formatting event ${item?.eventId}:`, error);
+        return null;
       }
-      acc[className].push(result);
-      return acc;
-    }, {});
-
-    // For each class we want to add some metadata like the max time, min time and avrage time
-    // Times are in string format  '1:19:21' and timeDiff represents the time behind the winner
-    Object.keys(groupedResults).forEach((className) => {
-      const classResults = groupedResults[className];
-
-      const timesInSeconds = classResults
-        .map((r) => r.time)
-        .filter(Boolean)
-        .map((timeStr) => {
-          const parts = timeStr.split(":").map(Number);
-          // If only MM:SS, treat as 0:MM:SS
-          if (parts.length === 2) {
-            parts.unshift(0);
-          }
-          return parts.reduce(
-            (total, part, index) =>
-              total + part * Math.pow(60, parts.length - 1 - index),
-            0
-          );
-        });
-
-      // Calculate timeDiffs in seconds (relative to winner)
-      const timeDiffsInSeconds = classResults
-        .map((r) => r.timeDiff)
-        .filter(Boolean)
-        .map((diffStr) => {
-          const parts = diffStr.split(":").map(Number);
-          // If only MM:SS, treat as 0:MM:SS
-          if (parts.length === 2) {
-            parts.unshift(0);
-          }
-          return parts.reduce(
-            (total, part, index) =>
-              total + part * Math.pow(60, parts.length - 1 - index),
-            0
-          );
-        });
-
-      if (timesInSeconds.length > 0) {
-        const maxTime = Math.max(...timesInSeconds);
-        const minTime = Math.min(...timesInSeconds);
-        const avgTime =
-          timesInSeconds.reduce((sum, t) => sum + t, 0) / timesInSeconds.length;
-
-        // Calculate medianTime
-        let medianTime = null;
-        if (timesInSeconds.length > 0) {
-          const sortedTimes = [...timesInSeconds].sort((a, b) => a - b);
-          const mid = Math.floor(sortedTimes.length / 2);
-          if (sortedTimes.length % 2 === 0) {
-            medianTime = Math.round(
-              (sortedTimes[mid - 1] + sortedTimes[mid]) / 2
-            );
-          } else {
-            medianTime = sortedTimes[mid];
-          }
-        }
-
-        // Convert back to HH:MM:SS format
-        const formatTime = (totalSeconds) => {
-          const hours = Math.floor(totalSeconds / 3600);
-          const minutes = Math.floor((totalSeconds % 3600) / 60);
-          const seconds = totalSeconds % 60;
-          return [hours, minutes, seconds]
-            .map((v) => v.toString().padStart(2, "0"))
-            .join(":");
-        };
-
-        // Calculate medianDiff and maxDiff (in seconds, formatted)
-        let medianDiff = null;
-        let maxDiff = null;
-        let avgDiff = null;
-        if (timeDiffsInSeconds.length > 0) {
-          const sortedDiffs = [...timeDiffsInSeconds].sort((a, b) => a - b);
-          const mid = Math.floor(sortedDiffs.length / 2);
-          if (sortedDiffs.length % 2 === 0) {
-            medianDiff = Math.round(
-              (sortedDiffs[mid - 1] + sortedDiffs[mid]) / 2
-            );
-          } else {
-            medianDiff = sortedDiffs[mid];
-          }
-          maxDiff = Math.max(...timeDiffsInSeconds);
-          avgDiff = Math.round(
-            timeDiffsInSeconds.reduce((sum, t) => sum + t, 0) /
-              timeDiffsInSeconds.length
-          );
-        }
-
-        groupedResults[className] = {
-          numberOfStarts: classResults.length,
-          numberOfDNF: classResults.filter(
-            (item) =>
-              item.status === "Disqualified" || item.status === "DidNotFinish"
-          ).length,
-          maxTime: formatTime(maxTime),
-          minTime: formatTime(minTime),
-          avgTime: formatTime(Math.round(avgTime)),
-          medianTime: medianTime !== null ? formatTime(medianTime) : null,
-          medianDiff: medianDiff !== null ? formatTime(medianDiff) : null,
-          maxDiff: maxDiff !== null ? formatTime(maxDiff) : null,
-          avgDiff: avgDiff !== null ? formatTime(avgDiff) : null,
-        };
-      } else {
-        groupedResults[className] = {
-          numberOfStarts: classResults.length,
-          numberOfDNF: classResults.filter(
-            (item) =>
-              item.status === "Disqualified" || item.status === "DidNotFinish"
-          ).length,
-        };
-      }
-    });
-
-    // console.log(groupedResults);
-
-    // return {
-    //       event: {
-    //         eventId: item.eventId,
-    //         name: item.name,
-    //         organiserId: organisationId.map(organisationIdRemap),
-    //         startDate: item.startDate?.date
-    //           ? new Date(item.startDate.date).toISOString()
-    //           : null,
-    //         disciplineId: disciplineId[0],
-    //         classificationId: item.eventClassificationId,
-    //         distance: item.eventRace?.raceDistance,
-    //         lightConditions: item.eventRace?.raceLightCondition,
-    //         numberOfEntries: numberOfEntries,
-    //         numberOfStarts: numberOfStarts,
-    //         location: eventLocation,
-    //         punchingUnitType: item.punchingUnitType?.value,
-    //       },
-    //       classes,
-    //       entries,
-    //       results,
-    //       runners,
-    //       entryFees,
-    //     };
-    //   } catch (error) {
-    //     console.error(`Error formatting event ${item?.eventId}:`, error);
-    //     return null;
-    //   }
-    // })
-    // .filter(Boolean);
-
-    return {
-      eventId: item.eventId,
-      name: item.name,
-      link: `https://eventor.orientering.no/Events/Show/${item.eventId}`,
-      startDate: new Date(item.startDate.date).toLocaleDateString("no-NO"),
-      distance: item.eventRace?.raceDistance,
-      lightConditions: item.eventRace?.raceLightCondition,
-      numberTTStarts: numberOfStarts,
-      ...groupedResults,
-      // classes,
-      // entries,
-
-      // results: groupedResults,
-      // runners,
-      // entryFees,
-    };
-  });
+    })
+    .filter(Boolean);
 };
 
 export const formatOrganisations = (organisations) => {
-  return ensureArray(organisations).filter(Boolean).map((item) => {
-    return {
-      organisationId: item.organisationId,
-      type: item.organisationTypeId,
-      name: item.name,
-      countryName: item.country.name[0],
-      parentOrganisationId: item.parentOrganisation?.organisationId,
-    };
-  });
+  return ensureArray(organisations)
+    .filter(Boolean)
+    .map((item) => {
+      return {
+        organisationId: item.organisationId,
+        type: item.organisationTypeId,
+        name: item.name,
+        countryName: item.country.name[0],
+        parentOrganisationId: item.parentOrganisation?.organisationId,
+      };
+    });
 };
 
 const organisationIdRemap = (organisationId) => {
