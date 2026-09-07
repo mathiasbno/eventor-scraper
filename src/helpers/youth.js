@@ -126,7 +126,6 @@ export const computeGroupedResults = (results) => {
  *     eventId, name, link, startDate, distance, lightConditions,
  *     numberTTStarts,
  *     // per-class stats spread at the top level (e.g. "H 13-14": { ... }),
- *     event, classes, entries, results, runners, entryFees,
  *   }
  */
 export const formatYouthEvents = (events) => {
@@ -144,12 +143,6 @@ export const formatYouthEvents = (events) => {
       lightConditions: item.event.lightConditions,
       numberTTStarts: item.event.numberOfStarts,
       ...groupedResults,
-      event: item.event,
-      classes: item.classes,
-      entries: item.entries,
-      results: item.results,
-      runners: item.runners,
-      entryFees: item.entryFees,
     };
   });
 };
