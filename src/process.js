@@ -328,11 +328,18 @@ const insertData = async (formattedEvents, startDate, toDate) => {
   // Eventor issues new resultIds when results are re-published, so upserting on
   // resultId leaves the old rows behind. Each scrape has the full result list for
   // an event, so replace instead of merge. Events with no results are skipped:
-  // that is more likely a failed fetch than a real wipe.
+  // that is more likely a failed fetch than a real wipe. If the event, class or
+  // runner upsert failed, the fresh results will be rejected by their foreign
+  // keys too, so keep the old ones rather than none.
   const rescrapedEventIds = formattedEvents
     .filter((item) => item.results.length)
     .map((item) => item.event.eventId);
-  if (rescrapedEventIds.length) {
+  if (
+    rescrapedEventIds.length &&
+    !eventsError &&
+    !classesError &&
+    !runnersError
+  ) {
     const { error } = await supabase
       .from("results")
       .delete()

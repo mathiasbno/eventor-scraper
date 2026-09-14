@@ -130,7 +130,8 @@ INSERT INTO "public"."discipline" ("id", "disciplineId", "name") VALUES
 	(1, '1', 'Orientering'),
 	(2, '2', 'MTBO'),
 	(3, '3', 'Skiorientering'),
-	(4, '4', 'PREO');
+	(4, '4', 'PREO'),
+	(5, '8', 'Innedørs-o');
 
 
 --
