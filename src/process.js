@@ -121,7 +121,7 @@ const fetchEntryFees = async (id) => {
   }
 };
 
-const mergeDuplicateRunners = async (
+export const mergeDuplicateRunners = async (
   step = 1,
   yearStart = 2011,
   yearEnd = new Date().getFullYear(),
@@ -142,7 +142,7 @@ const mergeDuplicateRunners = async (
   }
 };
 
-const removeRunnersWithoutResult = async () => {
+export const removeRunnersWithoutResult = async () => {
   console.time("remove runners");
   const { data, error } = await supabase.rpc("clean_up_runners");
   console.log(data, error);
@@ -324,6 +324,21 @@ const insertData = async (formattedEvents, startDate, toDate) => {
       ignoreDuplicates: false,
     },
   );
+
+  // Eventor issues new resultIds when results are re-published, so upserting on
+  // resultId leaves the old rows behind. Each scrape has the full result list for
+  // an event, so replace instead of merge. Events with no results are skipped:
+  // that is more likely a failed fetch than a real wipe.
+  const rescrapedEventIds = formattedEvents
+    .filter((item) => item.results.length)
+    .map((item) => item.event.eventId);
+  if (rescrapedEventIds.length) {
+    const { error } = await supabase
+      .from("results")
+      .delete()
+      .in("eventId", rescrapedEventIds);
+    if (error) console.error("Error clearing old results:", error);
+  }
 
   const { data: resultsData, error: resultsError } = await batchInsert(
     formattedEvents.flatMap((item) => item.results),
