@@ -4,6 +4,7 @@ import {
   LineChart,
   MultiSelect,
   MultiSelectItem,
+  Switch,
 } from "@tremor/react";
 import { useEffect, useState } from "react";
 
@@ -24,6 +25,7 @@ export function AgeChart(props) {
   const [data, setData] = useState([]);
   const [localFilter, setLocalFilter] = useState(generateDefaultFilter());
   const [error, setError] = useState(null);
+  const [unique, setUnique] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([
     "total_starts_under_9",
     "total_starts_9_10",
@@ -66,6 +68,7 @@ export function AgeChart(props) {
     const { data, error } = await supabase.rpc("get_starts_by_age_group", {
       organisation_ids: filter.organisations,
       discipline_list: filter.disciplines,
+      count_unique: unique,
     });
 
     if (error) {
@@ -91,7 +94,7 @@ export function AgeChart(props) {
 
   useEffect(() => {
     fetchData();
-  }, [filter]);
+  }, [filter, unique]);
 
   return (
     <Card
@@ -101,10 +104,25 @@ export function AgeChart(props) {
     >
       <div className="flex justify-between items-start flex-col mb-2 gap-2">
         <h3 className="text-tremor-content-strong dark:text-dark-tremor-content-strong font-medium">
-          Antall starter pr aldersgruppe
+          {unique ? "Antall unike løpere" : "Antall starter"} pr aldersgruppe
         </h3>
 
-        <div className="flex md:flex-row flex-col justify-between items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-row items-center gap-3">
+            <label
+              htmlFor="switch-unique"
+              className="whitespace-nowrap text-tremor-default text-tremor-content dark:text-dark-tremor-content"
+            >
+              Unike løpere
+            </label>
+            <Switch
+              id="switch-unique"
+              name="switch-unique"
+              checked={unique}
+              onChange={setUnique}
+            />
+          </div>
+
           <MultiSelect
             className="w-64"
             defaultValue={generateDefaultFilter()}
