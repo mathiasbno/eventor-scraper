@@ -136,7 +136,12 @@ export const mergeDuplicateRunners = async (
     });
     // const { data, error } = await supabase.rpc("get_duplicate_runners");
     console.log(year);
-    console.log(data, error);
+    // Fail loudly: in production the API role's 8s statement_timeout kills this call.
+    if (error) {
+      throw new Error(
+        `handle_duplicate_runners(${year}, ${step}) failed: ${error.message}`,
+      );
+    }
     year++;
     console.timeEnd("fetch");
   }
@@ -144,8 +149,8 @@ export const mergeDuplicateRunners = async (
 
 export const removeRunnersWithoutResult = async () => {
   console.time("remove runners");
-  const { data, error } = await supabase.rpc("clean_up_runners");
-  console.log(data, error);
+  const { error } = await supabase.rpc("clean_up_runners");
+  if (error) throw new Error(`clean_up_runners failed: ${error.message}`);
   console.timeEnd("remove runners");
 };
 
