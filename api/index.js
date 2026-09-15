@@ -86,7 +86,7 @@ app.get("/api/events", async (req, res) => {
     const response = await eventorApi.events(req.query);
     res.json(response);
   } catch (error) {
-    res.status;
+    res.status(502).json({ error: error.message });
   }
 });
 
@@ -96,7 +96,7 @@ app.get("/api/event/:eventId", async (req, res) => {
     const response = await eventorApi.event(eventId);
     res.json(response);
   } catch (error) {
-    res.status;
+    res.status(502).json({ error: error.message });
   }
 });
 
@@ -106,7 +106,7 @@ app.get("/api/entryfees/:eventId", async (req, res) => {
     const response = await eventorApi.entryfees(eventId);
     res.json(response);
   } catch (error) {
-    res.status;
+    res.status(502).json({ error: error.message });
   }
 });
 
@@ -116,7 +116,7 @@ app.get("/api/results/:eventId", async (req, res) => {
     const response = await eventorApi.results({ eventId: eventId });
     res.json(response);
   } catch (error) {
-    res.status;
+    res.status(502).json({ error: error.message });
   }
 });
 
@@ -126,7 +126,7 @@ app.get("/api/starts/:orgNumber/:raceId", async (req, res) => {
     const response = await eventorApi.starts(orgNumber, raceId);
     res.json(response);
   } catch (error) {
-    res.status;
+    res.status(502).json({ error: error.message });
   }
 });
 
@@ -136,7 +136,7 @@ app.get("/api/competitorcount/:raceId", async (req, res) => {
     const response = await eventorApi.competitorCount([], [raceId]);
     res.json(response);
   } catch (error) {
-    res.status;
+    res.status(502).json({ error: error.message });
   }
 });
 
@@ -145,7 +145,7 @@ app.get("/api/entries", async (req, res) => {
     const response = await eventorApi.entries(req.query);
     res.json(response);
   } catch (error) {
-    res.status;
+    res.status(502).json({ error: error.message });
   }
 });
 
@@ -155,7 +155,7 @@ app.get("/api/entries/:eventId", async (req, res) => {
     const response = await eventorApi.entries({ eventIds: eventId });
     res.json(response);
   } catch (error) {
-    res.status;
+    res.status(502).json({ error: error.message });
   }
 });
 
@@ -165,7 +165,7 @@ app.get("/api/organisation/:orgNumber", async (req, res) => {
     const response = await eventorApi.organisation(orgNumber);
     res.json(response);
   } catch (error) {
-    res.status;
+    res.status(502).json({ error: error.message });
   }
 });
 app.get("/api/persons/organisations/:orgNumber", async (req, res) => {
@@ -174,7 +174,7 @@ app.get("/api/persons/organisations/:orgNumber", async (req, res) => {
     const response = await eventorApi.personsByOrg(orgNumber);
     res.json(response);
   } catch (error) {
-    res.status;
+    res.status(502).json({ error: error.message });
   }
 });
 
@@ -186,7 +186,7 @@ app.get("/api/organisations", async (req, res) => {
     res.json(response);
   } catch (error) {
     console.error("Error fetching organisations:", error);
-    res.status;
+    res.status(502).json({ error: error.message });
   }
 });
 
@@ -196,7 +196,7 @@ app.get("/api/person/:personId", async (req, res) => {
     const response = await eventorApi.person(personId);
     res.json(response);
   } catch (error) {
-    res.status;
+    res.status(502).json({ error: error.message });
   }
 });
 
