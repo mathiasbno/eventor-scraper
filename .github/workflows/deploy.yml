@@ -29,7 +29,9 @@ jobs:
             cd ~/eventor-scraper/eventor-scraper
             git pull
 
-            yes | npx supabase db push --db-url postgresql://postgres.${{ secrets.POSTGRES_TENNANT }}:${{ secrets.POSTGRES_PASSWORD }}@${{ secrets.POSTGRES_HOST }}:6544/postgres
+            # 6544 is a transaction-mode pooler: pgx's cached prepared statements collide there, so use simple protocol.
+            # --include-all applies migrations whose timestamp is older than the last applied one.
+            npx supabase migration up --include-all --db-url 'postgresql://postgres.${{ secrets.POSTGRES_TENNANT }}:${{ secrets.POSTGRES_PASSWORD }}@${{ secrets.POSTGRES_HOST }}:6544/postgres?sslmode=disable&default_query_exec_mode=simple_protocol'
 
             cd ~
             docker-compose build --pull --no-cache eventor-scraper
