@@ -1,0 +1,18 @@
+{
+  "attribution": {
+    "commit": "",
+    "pr": "",
+    "sessionUrl": false
+  },
+  "worktree": {
+    "bgIsolation": "none"
+  },
+  "permissions": {
+    "deny": [
+      "Bash(supabase db reset:*)",
+      "Bash(npx supabase db reset:*)",
+      "Bash(supabase db push:*)",
+      "Bash(npx supabase db push:*)"
+    ]
+  }
+}

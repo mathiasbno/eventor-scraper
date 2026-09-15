@@ -59,7 +59,7 @@ The migration files are included to mirror the production environment localy. So
 supabase migration up
 ```
 
-Seed data for `organisations`, `diciplins` and `clasifications` are provided and will be inserted in your local DB when you run `supabase start`. When developing you can reset your local DB with `supabase db reset`, this will nuke the DB and reseeds it.
+Seed data for `organisations`, `diciplins` and `clasifications` are provided and will be inserted in your local DB when you run `supabase start`. Do not run `supabase db reset` or `supabase db push`; apply new migrations with `supabase migration up` so existing data is kept (see CLAUDE.md).
 
 ## Data Processing
 
