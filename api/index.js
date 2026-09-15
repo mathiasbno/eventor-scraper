@@ -1,15 +1,10 @@
-import EventorApi from "eventor-api";
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import cron from "node-cron";
+import * as eventorApi from "./eventor.js";
 
 dotenv.config();
-
-export const eventorApi = new EventorApi({
-  eventorApiUrl: process.env.EVENTOR_PATH,
-  apiKey: process.env.EVENTOR_APIKEY,
-});
 
 const app = express();
 app.use(express.json());
