@@ -5,6 +5,8 @@ import {
   fetchAndInsertOrgs,
   fetchEventsAndInsert,
   mergeDuplicateRunners,
+  mergeRunnersByNameAndClub,
+  estimateBirthYears,
   removeRunnersWithoutResult,
 } from "./process.js";
 
@@ -21,4 +23,6 @@ await fetchAndInsertOrgs();
 await fetchEventsAndInsert(startDate, endDate, 15);
 await mergeDuplicateRunners(1, year, year);
 await mergeDuplicateRunners(2, year, year);
+await mergeRunnersByNameAndClub();
 await removeRunnersWithoutResult();
+await estimateBirthYears();

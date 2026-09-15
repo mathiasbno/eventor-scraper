@@ -101,6 +101,8 @@ export const formatRunners = (results, entries, event) => {
         gender: item.person.sex,
         fullName: fullName,
         birthDate: birthDate,
+        // Eventor's value, even when null; estimate_birth_years fills the gaps afterwards.
+        birthDateEstimated: false,
         nationality: country,
         organisationId: organisationIdRemap(item?.organisation?.organisationId),
       };

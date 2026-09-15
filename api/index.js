@@ -24,11 +24,17 @@ async function updateEventsData() {
 
   console.log("Fetching new events", startDate, endDate);
   try {
-    const { fetchEventsAndInsert, fetchAndInsertOrgs } =
-      await import("../src/process.js");
+    const {
+      fetchEventsAndInsert,
+      fetchAndInsertOrgs,
+      mergeRunnersByNameAndClub,
+      estimateBirthYears,
+    } = await import("../src/process.js");
 
     await fetchAndInsertOrgs();
     await fetchEventsAndInsert(startDate, endDate, 7);
+    await mergeRunnersByNameAndClub();
+    await estimateBirthYears();
 
     console.log(
       "Events update completed successfully: Events imported for the last 7 days",

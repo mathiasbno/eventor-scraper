@@ -154,6 +154,21 @@ export const removeRunnersWithoutResult = async () => {
   console.timeEnd("remove runners");
 };
 
+// Same name and club across all years; catches runners entered without an Eventor account.
+export const mergeRunnersByNameAndClub = async () => {
+  const { data, error } = await supabase.rpc("merge_runners_by_name_and_club");
+  if (error) {
+    throw new Error(`merge_runners_by_name_and_club failed: ${error.message}`);
+  }
+  console.log(`Merged ${data} runners by name and club`);
+};
+
+export const estimateBirthYears = async () => {
+  const { data, error } = await supabase.rpc("estimate_birth_years");
+  if (error) throw new Error(`estimate_birth_years failed: ${error.message}`);
+  console.log(`Updated ${data} estimated birth years`);
+};
+
 const fetchWithRetry = async (url, options = {}, retries = 3) => {
   for (let i = 0; i < retries; i++) {
     try {
