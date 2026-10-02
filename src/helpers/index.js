@@ -336,8 +336,12 @@ export const formatEvents = (events) => {
         }
 
         // If we don't have any results or there are no registered starts on the event,
-        // we assume that it was at least as many starts as entries
-        if (numberOfStarts === 0) {
+        // we assume that it was at least as many starts as entries. Only once the event
+        // day has passed: Eventor also lists upcoming events, with entries but 0 starts.
+        const today = new Date().toLocaleDateString("sv-SE", {
+          timeZone: "Europe/Oslo",
+        });
+        if (numberOfStarts === 0 && item.startDate?.date < today) {
           numberOfStarts = numberOfEntries;
         }
 
