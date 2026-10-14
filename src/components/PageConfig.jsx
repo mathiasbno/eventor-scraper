@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import { Spinner } from "./Spinner";
 
-const blackListedOrganisations = ["3591"];
+const blackListedOrganisations = ["3591", "4196", "4733"];
 
 export function PageConfig(props) {
   const { setFilter } = props;
@@ -47,7 +47,7 @@ export function PageConfig(props) {
       } else {
         setOrganisations(
           organisationsData.filter(
-            (item) => !blackListedOrganisations.includes(item.organisationId)
+            (item) => !blackListedOrganisations.includes(String(item.organisationId))
           )
         );
         setDisciplines(disciplinesData);

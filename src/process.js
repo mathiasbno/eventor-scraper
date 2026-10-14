@@ -14,7 +14,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY, // Use service role key to avoid explicit auth
 );
 
-const blackListedOrganisations = ["3591"];
+const blackListedOrganisations = ["3591", "4196", "4733"];
 const defaultRequestTimeoutMs = Number(process.env.FETCH_TIMEOUT_MS || 45000);
 
 const getApiBasePath = () => {
