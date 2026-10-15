@@ -118,6 +118,12 @@ export const formatResults = (results, entries, event) => {
 
   const items = normalizedResults.length ? normalizedResults : normalizedEntries;
 
+  // Knockout heats, finals and ranking classes ("NM KO Total", "WRE") list the same
+  // runner again within one race. Keep one start per runner per race; multi-day
+  // events have a raceResult per day, so every day still counts.
+  const seen = new Set();
+  let duplicates = 0;
+
   const data = items.flatMap((item) => {
     const personResult = ensureArray(item.personResult).filter(Boolean);
     const teamCompetitor = ensureArray(item.teamCompetitor).filter((p) =>
@@ -161,11 +167,12 @@ export const formatResults = (results, entries, event) => {
 
     return results
       .map((person) => {
+        const result = person.result ?? person.raceResult?.result;
         // If the person did not start or is inactive we dont want to include them in the results
         if (
           !person?.person?.personName ||
-          person.result?.competitorStatus?.value === "DidNotStart" ||
-          person.result?.competitorStatus?.value === "Inactive"
+          result?.competitorStatus?.value === "DidNotStart" ||
+          result?.competitorStatus?.value === "Inactive"
         ) {
           return null;
         }
@@ -173,10 +180,16 @@ export const formatResults = (results, entries, event) => {
         const fullName = `${person.person.personName.given._} ${person.person.personName.family}`;
         // const personId = person.person.personId || fullName;
         const personId = `${person.person.personId}-${toCamelcase(fullName)}`;
+
+        const raceKey = `${person.raceResult?.eventRaceId}-${personId}`;
+        if (seen.has(raceKey)) {
+          duplicates++;
+          return null;
+        }
+        seen.add(raceKey);
+
         const resultId =
-          person.result?.resultId ||
-          person.raceResult?.result?.resultId ||
-          `${eventId}${person.bibNumber}${personId}`;
+          result?.resultId || `${eventId}${person.bibNumber}${personId}`;
 
         return {
           resultId: resultId,
@@ -190,10 +203,13 @@ export const formatResults = (results, entries, event) => {
       .filter(Boolean);
   });
 
-  return filterUniqueByKey(
-    data.filter((item) => Boolean(item?.personId)),
-    "resultId"
-  );
+  return {
+    results: filterUniqueByKey(
+      data.filter((item) => Boolean(item?.personId)),
+      "resultId"
+    ),
+    duplicates,
+  };
 };
 
 export const formatEntries = (_entries, event) => {
@@ -288,9 +304,9 @@ export const formatRaceData = (_results, _entries, _entryFees, event) => {
       validClassIds.has(item.classId) && validPersonIds.has(item.personId)
   );
 
-  const results = formatResults(_results, _entries, event);
+  const { results, duplicates } = formatResults(_results, _entries, event);
 
-  return { classes, entries, results, runners, entryFees };
+  return { classes, entries, results, runners, entryFees, duplicates };
 };
 
 export const formatEvents = (events) => {
@@ -300,7 +316,7 @@ export const formatEvents = (events) => {
     .filter(Boolean)
     .map((item) => {
       try {
-        const { classes, entries, results, runners, entryFees } =
+        const { classes, entries, results, runners, entryFees, duplicates } =
           formatRaceData(item.results, item.entries, item.entryfees, item);
 
         const organiser = item.organiser || {};
@@ -333,6 +349,22 @@ export const formatEvents = (events) => {
         if (item.eventForm === "RelaySingleDay") {
           numberOfEntries = Math.max(numberOfEntries, entries.length);
           numberOfStarts = Math.max(numberOfStarts, results.length);
+        }
+
+        // Eventor's counts include every heat a runner ran (see formatResults).
+        // For a single individual race its entry list has one entry per runner,
+        // but misses runners entered on the day.
+        if (duplicates) {
+          numberOfStarts = results.length;
+          if (
+            item.eventForm !== "RelaySingleDay" &&
+            !Array.isArray(item.eventRace)
+          ) {
+            numberOfEntries = Math.max(
+              ensureArray(item.entries).length,
+              results.length
+            );
+          }
         }
 
         // If we don't have any results or there are no registered starts on the event,
