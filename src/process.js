@@ -154,6 +154,13 @@ export const removeRunnersWithoutResult = async () => {
   console.timeEnd("remove runners");
 };
 
+// Run before the other merges: they would otherwise merge real runners into a borrowed id.
+export const fixSharedPersonIds = async () => {
+  const { data, error } = await supabase.rpc("fix_shared_person_ids");
+  if (error) throw new Error(`fix_shared_person_ids failed: ${error.message}`);
+  console.log(`Fixed ${data} runners sharing an Eventor id`);
+};
+
 // Same name and club across all years; catches runners entered without an Eventor account.
 export const mergeRunnersByNameAndClub = async () => {
   const { data, error } = await supabase.rpc("merge_runners_by_name_and_club");

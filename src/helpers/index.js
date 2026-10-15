@@ -288,7 +288,42 @@ export const formatEntryFees = (entryFees, event) => {
   }));
 };
 
+// Some relays (2014-2017) carry bib number + leg as personId (team 301, leg 2 -> "302"),
+// with the birth date and sex of whoever owns that id. When most ids in a relay look
+// like that, none of them can be trusted: keep only the names, so the runners become
+// name-only ("-name") like runners without an Eventor account.
+const withoutBibPersonIds = (results) => {
+  const teams = ensureArray(results).flatMap((r) => ensureArray(r?.teamResult));
+  const members = teams.flatMap((team) =>
+    ensureArray(team?.teamMemberResult)
+      .filter((member) => member?.person?.personId)
+      .map((member) => ({ team, member }))
+  );
+  const bibIds = members.filter(
+    ({ team, member }) =>
+      member.person.personId ===
+      String(Math.floor(team.bibNumber / 100) * 100 + Number(member.leg))
+  );
+  if (!members.length || bibIds.length * 2 < members.length) return results;
+
+  return ensureArray(results).map((r) => ({
+    ...r,
+    teamResult: ensureArray(r?.teamResult).map((team) => ({
+      ...team,
+      teamMemberResult: ensureArray(team?.teamMemberResult).map((member) =>
+        member?.person
+          ? { ...member, person: { personId: "", personName: member.person.personName } }
+          : member
+      ),
+    })),
+  }));
+};
+
 export const formatRaceData = (_results, _entries, _entryFees, event) => {
+  if (event.eventForm === "RelaySingleDay") {
+    _results = withoutBibPersonIds(_results);
+  }
+
   const runners = formatRunners(_results, _entries, event);
 
   const classes = formatClasses(_results, _entries, event);

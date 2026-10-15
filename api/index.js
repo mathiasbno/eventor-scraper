@@ -22,12 +22,14 @@ async function updateEventsData() {
     const {
       fetchEventsAndInsert,
       fetchAndInsertOrgs,
+      fixSharedPersonIds,
       mergeRunnersByNameAndClub,
       estimateBirthYears,
     } = await import("../src/process.js");
 
     await fetchAndInsertOrgs();
     await fetchEventsAndInsert(startDate, endDate, 7);
+    await fixSharedPersonIds();
     await mergeRunnersByNameAndClub();
     await estimateBirthYears();
 

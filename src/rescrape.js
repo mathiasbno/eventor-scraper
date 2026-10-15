@@ -4,6 +4,7 @@
 import {
   fetchAndInsertOrgs,
   fetchEventsAndInsert,
+  fixSharedPersonIds,
   mergeDuplicateRunners,
   mergeRunnersByNameAndClub,
   estimateBirthYears,
@@ -21,6 +22,7 @@ const endDate = new Date(Math.min(Date.now(), new Date(`${year + 1}-01-01`)));
 
 await fetchAndInsertOrgs();
 await fetchEventsAndInsert(startDate, endDate, 15);
+await fixSharedPersonIds();
 await mergeDuplicateRunners(1, year, year);
 await mergeDuplicateRunners(2, year, year);
 await mergeRunnersByNameAndClub();

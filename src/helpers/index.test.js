@@ -60,3 +60,36 @@ test("multi-day events keep one start per day and drop no-shows", () => {
   assert.equal(e.numberOfStarts, 2);
   assert.equal(e.numberOfEntries, 3);
 });
+
+test("relays with bib number + leg as personId keep only the names", () => {
+  const relay = (ids) =>
+    formatEvents([
+      event({
+        eventForm: "RelaySingleDay",
+        results: [
+          {
+            eventClass: { eventClassId: "10", name: "D17" },
+            teamResult: [
+              {
+                bibNumber: "301",
+                organisation: { organisationId: "303" },
+                teamMemberResult: ids.map((id, i) => ({
+                  leg: String(i + 1),
+                  person: { ...person(id, ["Ola", "Kari"][i]), birthDate: { date: "1957-01-01" }, sex: "M" },
+                })),
+              },
+            ],
+          },
+        ],
+      }),
+    ])[0];
+
+  const bib = relay(["301", "302"]);
+  assert.deepEqual(bib.runners.map((r) => r.personId), ["-olaNordmann", "-kariNordmann"]);
+  assert.deepEqual(bib.results.map((r) => r.personId), ["-olaNordmann", "-kariNordmann"]);
+  assert.equal(bib.runners[0].birthDate, null);
+
+  const real = relay(["5001", "5002"]);
+  assert.deepEqual(real.runners.map((r) => r.personId), ["5001-olaNordmann", "5002-kariNordmann"]);
+  assert.equal(real.runners[0].birthDate, "1957-01-01T00:00:00.000Z");
+});
