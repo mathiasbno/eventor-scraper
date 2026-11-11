@@ -37,7 +37,9 @@ export const transformData = (grouped, years, accumulate, direction) => {
 
   const data = [];
   for (let x = 1; x <= cap; x++) {
-    const label = accumulate ? `${direction === "lte" ? "≤" : "≥"} ${x}` : `${x}`;
+    const label = accumulate
+      ? `${direction === "lte" ? "≤" : "≥"} ${x}`
+      : `${x}`;
     const point = { period: label };
     selected.forEach((year) => {
       const { counts, total } = grouped[year];
@@ -50,7 +52,7 @@ export const transformData = (grouped, years, accumulate, direction) => {
 
   // Final point for the runners beyond the cap, if there are any.
   const hasTail = selected.some((y) =>
-    Object.keys(grouped[y].counts).some((n) => Number(n) > cap)
+    Object.keys(grouped[y].counts).some((n) => Number(n) > cap),
   );
   if (hasTail) {
     // ≤ mode: the curve ends at everyone. Otherwise: the runners above the cap.
@@ -72,3 +74,43 @@ export const transformData = (grouped, years, accumulate, direction) => {
   return data;
 };
 
+// Histogram buckets: single start counts where most runners are, wider buckets for
+// the long tail. `max` is Infinity for the open-ended last bucket.
+const HISTOGRAM_BUCKETS = [
+  { min: 1, max: 1 },
+  { min: 2, max: 3 },
+  { min: 4, max: 6 },
+  { min: 7, max: 10 },
+  { min: 11, max: 15 },
+  { min: 16, max: 20 },
+  { min: 21, max: 30 },
+  { min: 31, max: 50 },
+  { min: 51, max: Infinity },
+];
+
+const bucketLabel = ({ min, max }) =>
+  min === max ? `${min}` : max === Infinity ? `${min}+` : `${min}-${max}`;
+
+// Runners per bucket of start counts, one value per selected year (or the share of
+// the year's runners in percent). Buckets after the last one that has any runners
+// are left out.
+export const transformHistogramData = (grouped, years, asShare = false) => {
+  const selected = years.filter((y) => grouped[y]);
+  if (!selected.length) return [];
+
+  const data = HISTOGRAM_BUCKETS.map((bucket) => {
+    const point = { period: bucketLabel(bucket) };
+    selected.forEach((year) => {
+      const runners = Object.entries(grouped[year].counts).reduce(
+        (sum, [n, c]) => (n >= bucket.min && n <= bucket.max ? sum + c : sum),
+        0,
+      );
+      point[year] = asShare ? (runners / grouped[year].total) * 100 : runners;
+    });
+    return point;
+  });
+
+  let last = data.length;
+  while (last > 1 && selected.every((y) => data[last - 1][y] === 0)) last--;
+  return data.slice(0, last);
+};

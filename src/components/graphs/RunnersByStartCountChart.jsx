@@ -1,109 +1,43 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   Button,
   Card,
   LineChart,
-  MultiSelect,
-  MultiSelectItem,
   Switch,
   Tab,
   TabGroup,
   TabList,
 } from "@tremor/react";
-import { supabase } from "../../supabaseClient";
 import { Spinner } from "../Spinner";
+import { COVERAGE, transformData } from "../../helpers/startCountChart";
+import { useRunnersByStartCount } from "../../helpers/useRunnersByStartCount";
 import {
-  COVERAGE,
-  groupByYear,
-  transformData,
-} from "../../helpers/startCountChart";
-
-// Event classifications imported by the scraper (classificationId -> label).
-const categories = [
-  { id: "0", label: "Internasjonale løp" },
-  { id: "1", label: "Mesterskap" },
-  { id: "2", label: "Nasjonale løp" },
-  { id: "3", label: "Kretsløp" },
-  { id: "4", label: "Nærløp" },
-];
-
-const colors = [
-  "fuchsia",
-  "lime",
-  "teal",
-  "yellow",
-  "indigo",
-  "rose",
-  "cyan",
-  "amber",
-  "emerald",
-  "orange",
-  "violet",
-  "sky",
-  "stone",
-  "pink",
-];
+  CategoryAndYearSelects,
+  SamePeriodSwitch,
+  samePeriodNote,
+  startCountColors,
+  startCountLabelClass,
+  startCountScopeNote,
+} from "./StartCountFilters";
 
 export function RunnersByStartCountChart({ filter }) {
-  const [loading, setLoading] = useState(false);
-  const [data, setData] = useState({});
-  const [error, setError] = useState(null);
   const [accumulate, setAccumulate] = useState(true);
   const [direction, setDirection] = useState("lte");
-  const [samePeriod, setSamePeriod] = useState(true);
-  const [localFilter, setLocalFilter] = useState([]);
-  // Empty means all categories.
-  const [selectedCategories, setSelectedCategories] = useState([]);
-  const lastFilter = useRef(null);
+  const {
+    data,
+    loading,
+    error,
+    fetchData,
+    samePeriod,
+    setSamePeriod,
+    selectedCategories,
+    setSelectedCategories,
+    selectedYears,
+    yearLabels,
+    handleYearsChange,
+  } = useRunnersByStartCount(filter);
 
-  const fetchData = async () => {
-    setLoading(true);
-    setError(null);
-    const { data: rows, error } = await supabase.rpc(
-      "get_runners_by_start_count",
-      {
-        organisation_ids: filter.organisations,
-        discipline_list: filter.disciplines,
-        same_period: samePeriod,
-        classification_list: selectedCategories.length
-          ? selectedCategories.map(Number)
-          : null,
-      }
-    );
-
-    if (error) {
-      console.error("Error fetching data:", error);
-      setError(error.message);
-    } else {
-      const grouped = groupByYear(rows);
-      setData(grouped);
-      // Only reset the selected years when the page filter changes, not when
-      // toggling "Samme periode".
-      if (lastFilter.current !== filter) {
-        lastFilter.current = filter;
-        setLocalFilter(Object.keys(grouped).sort((a, b) => b - a).slice(0, 3));
-      }
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, [filter, samePeriod, selectedCategories]);
-
-  const chartYearLabels = Object.keys(data).sort((a, b) => b - a);
-  const chartData = transformData(data, localFilter, accumulate, direction);
-
-  const handleSelectChange = (selectedValues) => {
-    setLocalFilter(
-      selectedValues
-        .filter((year) => chartYearLabels.includes(year))
-        .sort((a, b) => b - a)
-    );
-  };
-
-  const labelClass =
-    "text-tremor-default text-tremor-content dark:text-dark-tremor-content";
+  const chartData = transformData(data, selectedYears, accumulate, direction);
 
   return (
     <Card
@@ -116,19 +50,16 @@ export function RunnersByStartCountChart({ filter }) {
           Løpere etter antall starter
         </h3>
         <div className="flex md:flex-row flex-col items-start justify-between md:items-center gap-3 flex-wrap">
+          <SamePeriodSwitch
+            id="start-count-same-period"
+            samePeriod={samePeriod}
+            setSamePeriod={setSamePeriod}
+          />
           <div className="flex flex-row gap-3 items-center">
-            <label htmlFor="start-count-same-period" className={labelClass}>
-              Samme periode
-            </label>
-            <Switch
-              id="start-count-same-period"
-              name="start-count-same-period"
-              checked={samePeriod}
-              onChange={setSamePeriod}
-            />
-          </div>
-          <div className="flex flex-row gap-3 items-center">
-            <label htmlFor="start-count-accumulate" className={labelClass}>
+            <label
+              htmlFor="start-count-accumulate"
+              className={startCountLabelClass}
+            >
               Akkumulert
             </label>
             <Switch
@@ -147,9 +78,7 @@ export function RunnersByStartCountChart({ filter }) {
             <TabList
               variant="solid"
               aria-disabled={!accumulate}
-              title={
-                accumulate ? undefined : "Slå på «Akkumulert» for å velge"
-              }
+              title={accumulate ? undefined : "Slå på «Akkumulert» for å velge"}
               className={accumulate ? "" : "opacity-50 cursor-not-allowed"}
             >
               <Tab
@@ -166,30 +95,14 @@ export function RunnersByStartCountChart({ filter }) {
               </Tab>
             </TabList>
           </TabGroup>
-          <MultiSelect
-            className="w-64"
-            placeholder="Alle kategorier"
-            placeholderSearch="Søk"
-            value={selectedCategories}
-            onValueChange={setSelectedCategories}
-          >
-            {categories.map(({ id, label }) => (
-              <MultiSelectItem value={id} key={`start-count-category-${id}`}>
-                {label}
-              </MultiSelectItem>
-            ))}
-          </MultiSelect>
-          <MultiSelect
-            className="w-64"
-            value={localFilter}
-            onValueChange={handleSelectChange}
-          >
-            {chartYearLabels.map((year) => (
-              <MultiSelectItem value={year} key={`start-count-year-${year}`}>
-                {year}
-              </MultiSelectItem>
-            ))}
-          </MultiSelect>
+          <CategoryAndYearSelects
+            idPrefix="start-count"
+            selectedCategories={selectedCategories}
+            setSelectedCategories={setSelectedCategories}
+            selectedYears={selectedYears}
+            yearLabels={yearLabels}
+            handleYearsChange={handleYearsChange}
+          />
         </div>
       </div>
       <div className="flex justify-center items-center h-80">
@@ -206,8 +119,8 @@ export function RunnersByStartCountChart({ filter }) {
             className="h-80"
             data={chartData}
             index="period"
-            categories={localFilter}
-            colors={colors}
+            categories={selectedYears}
+            colors={startCountColors}
             yAxisWidth={60}
             valueFormatter={(v) => `${v.toLocaleString("nb-NO")} løpere`}
           />
@@ -223,17 +136,8 @@ export function RunnersByStartCountChart({ filter }) {
               : "«≥ 5» betyr løpere med 5 eller flere starter. Siste punkt er de resterende løperne med flest starter."
             : "Viser løpere med nøyaktig så mange starter. Siste punkt samler de resterende løperne med flest starter."}
         </p>
-        <p>
-          Løpere uten Eventor-ID (f.eks. uregistrerte løpere) er ikke med. Ved
-          valg av krets telles løpere fra klubber i kretsen, basert på løperens
-          nåværende klubb, med alle deres starter uansett arrangør. Ved valg av kategori telles
-          bare starter i løp av de valgte kategoriene.
-        </p>
-        <p>
-          {samePeriod
-            ? "«Samme periode» teller kun starter fram til dagens dato i hvert år, slik at inneværende år kan sammenlignes med tidligere år."
-            : "Data for inneværende år viser tall til og med sist uke."}
-        </p>
+        <p>{startCountScopeNote}</p>
+        <p>{samePeriodNote(samePeriod)}</p>
       </div>
     </Card>
   );
