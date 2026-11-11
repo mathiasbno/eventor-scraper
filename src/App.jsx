@@ -7,6 +7,7 @@ import { YouthInYear } from "./components/kpi/YouthInYear";
 import { EventsInYear } from "./components/kpi/EventsInYear";
 
 import { EventsChartCompare } from "./components/graphs/EventsChartCompare";
+import { RunnersByStartCountChart } from "./components/graphs/RunnersByStartCountChart";
 import { AgeChartCohort } from "./components/graphs/AgeChartCohort";
 import { AgeChart } from "./components/graphs/AgeChart";
 import { EventsCategoryChart } from "./components/graphs/EventsCategoryChart";
@@ -52,6 +53,7 @@ function App() {
                 </h2>
               </Divider>
               <EventsChartCompare filter={filter} />
+              <RunnersByStartCountChart filter={filter} />
               <EventsCategoryChart filter={filter} />
               <EventsChart filter={filter} />
               <EventsChartMidWeekVsWeekend filter={filter} />
