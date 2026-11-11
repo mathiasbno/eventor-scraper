@@ -57,7 +57,7 @@ export function EntryFeesChart(props) {
       .filter(
         (item) =>
           item.period === period &&
-          item.event_classification === classification &&
+          String(item.event_classification) === classification &&
           item.class_type === classtype &&
           item.type === type
       )
@@ -91,7 +91,7 @@ export function EntryFeesChart(props) {
             <SelectItem value="youth">Ungdom</SelectItem>
             <SelectItem value="adult">Voksen</SelectItem>
             <SelectItem value="kids">Barn</SelectItem>
-            <SelectItem value="not_specified">Ikke spesifisert</SelectItem>
+            <SelectItem value="notSpecified">Ikke spesifisert</SelectItem>
           </Select>
           <Select
             className="w-full xl:w-64"
